@@ -1,8 +1,11 @@
 [package]
 name = "ul-sys"
-version = "0.1.0-rc1"
+version = "0.1.0-rc1-2"
 authors = ["Kenan Sulayman <kenan@sly.mn>"]
 description = "Bindings to Ultralight Framework (Ultralight, AppCore)"
 license = "MIT"
+
+repository = "https://github.com/psychonautwiki/rust-ul-sys"
+documentation = "https://docs.rs/ul-sys/latest/ul_sys/"
 
 [dependencies]
