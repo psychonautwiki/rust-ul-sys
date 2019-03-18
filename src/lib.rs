@@ -1704,24 +1704,55 @@ pub struct C_Overlay {
 }
 pub type ULOverlay = *mut C_Overlay;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create the App singleton."]
+    #[doc = ""]
+    #[doc = " @param  config  Configuration settings to use."]
+    #[doc = ""]
+    #[doc = " @note  You should only create one of these per application lifetime."]
+    #[doc = ""]
+    #[doc = "        App maintains its own Renderer instance, make sure to set your"]
+    #[doc = "        Config before creating App. (@see Platform::set_config)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateApp"]
-    pub fn ulCreateApp() -> ULApp;
+    pub fn ulCreateApp(config: ULConfig) -> ULApp;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy the App instance."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyApp"]
     pub fn ulDestroyApp(app: ULApp);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set the main window. You must set this before calling ulAppRun."]
+    #[doc = ""]
+    #[doc = " @param  window  The window to use for all rendering."]
+    #[doc = ""]
+    #[doc = " @note  We currently only support one Window per App, this will change"]
+    #[doc = "        later once we add support for multiple driver instances."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppSetWindow"]
     pub fn ulAppSetWindow(app: ULApp, window: ULWindow);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the main window."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppGetWindow"]
     pub fn ulAppGetWindow(app: ULApp) -> ULWindow;
 }
 pub type ULUpdateCallback =
     ::std::option::Option<unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void)>;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set a callback for whenever the App updates. You should update all app"]
+    #[doc = " logic here."]
+    #[doc = ""]
+    #[doc = " @note  This event is fired right before the run loop calls"]
+    #[doc = "        Renderer::Update and Renderer::Render."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppSetUpdateCallback"]
     pub fn ulAppSetUpdateCallback(
         app: ULApp,
@@ -1730,38 +1761,79 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not the App is running."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppIsRunning"]
     pub fn ulAppIsRunning(app: ULApp) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the main monitor (this is never NULL)."]
+    #[doc = ""]
+    #[doc = " @note  We\'ll add monitor enumeration later."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppGetMainMonitor"]
     pub fn ulAppGetMainMonitor(app: ULApp) -> ULMonitor;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the underlying Renderer instance."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppGetRenderer"]
     pub fn ulAppGetRenderer(app: ULApp) -> ULRenderer;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Run the main loop."]
+    #[doc = ""]
+    #[doc = " @note  Make sure to call ulAppSetWindow before calling this."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppRun"]
     pub fn ulAppRun(app: ULApp);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Quit the application."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulAppQuit"]
     pub fn ulAppQuit(app: ULApp);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the monitor\'s DPI scale (1.0 = 100%)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulMonitorGetScale"]
     pub fn ulMonitorGetScale(monitor: ULMonitor) -> f64;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the width of the monitor (in device coordinates)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulMonitorGetWidth"]
     pub fn ulMonitorGetWidth(monitor: ULMonitor) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the height of the monitor (in device coordinates)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulMonitorGetHeight"]
     pub fn ulMonitorGetHeight(monitor: ULMonitor) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a new Window."]
+    #[doc = ""]
+    #[doc = " @param  monitor       The monitor to create the Window on."]
+    #[doc = ""]
+    #[doc = " @param  width         The width (in device coordinates)."]
+    #[doc = ""]
+    #[doc = " @param  height        The height (in device coordinates)."]
+    #[doc = ""]
+    #[doc = " @param  fullscreen    Whether or not the window is fullscreen."]
+    #[doc = ""]
+    #[doc = " @param  window_flags  Various window flags."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateWindow"]
     pub fn ulCreateWindow(
         monitor: ULMonitor,
@@ -1772,12 +1844,18 @@ extern "C" {
     ) -> ULWindow;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a Window."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyWindow"]
     pub fn ulDestroyWindow(window: ULWindow);
 }
 pub type ULCloseCallback =
     ::std::option::Option<unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void)>;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set a callback to be notified when a window closes."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowSetCloseCallback"]
     pub fn ulWindowSetCloseCallback(
         window: ULWindow,
@@ -1793,6 +1871,10 @@ pub type ULResizeCallback = ::std::option::Option<
     ),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set a callback to be notified when a window resizes"]
+    #[doc = " (parameters are passed back in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowSetResizeCallback"]
     pub fn ulWindowSetResizeCallback(
         window: ULWindow,
@@ -1801,34 +1883,58 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get window width (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowGetWidth"]
     pub fn ulWindowGetWidth(window: ULWindow) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get window height (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowGetHeight"]
     pub fn ulWindowGetHeight(window: ULWindow) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get whether or not a window is fullscreen."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowIsFullscreen"]
     pub fn ulWindowIsFullscreen(window: ULWindow) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the DPI scale of a window."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowGetScale"]
     pub fn ulWindowGetScale(window: ULWindow) -> f64;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set the window title."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowSetTitle"]
     pub fn ulWindowSetTitle(window: ULWindow, title: *const ::std::os::raw::c_char);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set the cursor for a window."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowSetCursor"]
     pub fn ulWindowSetCursor(window: ULWindow, cursor: ULCursor);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Close a window."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowClose"]
     pub fn ulWindowClose(window: ULWindow);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Convert device coordinates to pixels using the current DPI scale."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowDeviceToPixel"]
     pub fn ulWindowDeviceToPixel(
         window: ULWindow,
@@ -1836,6 +1942,9 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Convert pixels to device coordinates using the current DPI scale."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulWindowPixelsToDevice"]
     pub fn ulWindowPixelsToDevice(
         window: ULWindow,
@@ -1843,8 +1952,28 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a new Overlay."]
+    #[doc = ""]
+    #[doc = " @param  window  The window to create the Overlay in. (we currently only"]
+    #[doc = "                 support one window per application)"]
+    #[doc = ""]
+    #[doc = " @param  width   The width in device coordinates."]
+    #[doc = ""]
+    #[doc = " @param  height  The height in device coordinates."]
+    #[doc = ""]
+    #[doc = " @param  x       The x-position (offset from the left of the Window), in"]
+    #[doc = "                 device coordinates."]
+    #[doc = ""]
+    #[doc = " @param  y       The y-position (offset from the top of the Window), in"]
+    #[doc = "                 device coordinates."]
+    #[doc = ""]
+    #[doc = " @note  Each Overlay is essentially a View and an on-screen quad. You should"]
+    #[doc = "        create the Overlay then load content into the underlying View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateOverlay"]
     pub fn ulCreateOverlay(
+        window: ULWindow,
         width: ::std::os::raw::c_int,
         height: ::std::os::raw::c_int,
         x: ::std::os::raw::c_int,
@@ -1852,38 +1981,107 @@ extern "C" {
     ) -> ULOverlay;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy an overlay."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyOverlay"]
     pub fn ulDestroyOverlay(overlay: ULOverlay);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the underlying View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetView"]
     pub fn ulOverlayGetView(overlay: ULOverlay) -> ULView;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the width (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetWidth"]
     pub fn ulOverlayGetWidth(overlay: ULOverlay) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the height (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetHeight"]
     pub fn ulOverlayGetHeight(overlay: ULOverlay) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the x-position (offset from the left of the Window), in device"]
+    #[doc = " coordinates."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetX"]
     pub fn ulOverlayGetX(overlay: ULOverlay) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the y-position (offset from the top of the Window), in device"]
+    #[doc = " coordinates."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetY"]
     pub fn ulOverlayGetY(overlay: ULOverlay) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Move the overlay to a new position (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayMoveTo"]
     pub fn ulOverlayMoveTo(overlay: ULOverlay, x: ::std::os::raw::c_int, y: ::std::os::raw::c_int);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Resize the overlay (and underlying View), dimensions should be"]
+    #[doc = " specified in device coordinates."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulOverlayResize"]
     pub fn ulOverlayResize(
         overlay: ULOverlay,
         width: ::std::os::raw::c_int,
         height: ::std::os::raw::c_int,
     );
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not the overlay is hidden (not drawn)."]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayIsHidden"]
+    pub fn ulOverlayIsHidden(overlay: ULOverlay) -> bool;
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Hide the overlay (will no longer be drawn)"]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayHide"]
+    pub fn ulOverlayHide(overlay: ULOverlay);
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Show the overlay."]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayShow"]
+    pub fn ulOverlayShow(overlay: ULOverlay);
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not an overlay has keyboard focus."]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayHasFocus"]
+    pub fn ulOverlayHasFocus(overlay: ULOverlay) -> bool;
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Grant this overlay exclusive keyboard focus."]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayFocus"]
+    pub fn ulOverlayFocus(overlay: ULOverlay);
+}
+extern "C" {
+    #[doc = ""]
+    #[doc = " Remove keyboard focus."]
+    #[doc = ""]
+    #[link_name = "\u{1}_ulOverlayUnfocus"]
+    pub fn ulOverlayUnfocus(overlay: ULOverlay);
 }

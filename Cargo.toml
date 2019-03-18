@@ -1,6 +1,6 @@
 [package]
 name = "ul-sys"
-version = "0.1.0-alpha"
+version = "0.1.0-rc1"
 authors = ["Kenan Sulayman <kenan@sly.mn>"]
 description = "Bindings to Ultralight Framework (Ultralight, AppCore)"
 license = "MIT"
