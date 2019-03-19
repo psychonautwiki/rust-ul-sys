@@ -31,7 +31,7 @@ ul::ulAppSetWindow(app, window);
 
 let renderer = ul::ulAppGetRenderer(app);
 let view = ul::ulCreateView(renderer, width, height, false);
-let overlay = ul::ulCreateOverlay(window, width, height, 0, 0);
+let overlay = ul::ulCreateOverlay(window, width as i32, height as i32, 0, 0);
 let view = ul::ulOverlayGetView(overlay);
 
 ul::ulViewLoadURL(view, ulstr("https://apple.com"));
