@@ -10,6 +10,7 @@ pub const ULLONG_MAX: i32 = -1;
 pub const RLIMIT_THREAD_CPULIMITS: u32 = 3;
 pub const WAKEMON_SET_DEFAULTS: u32 = 8;
 pub const IOPOL_DEFAULT: u32 = 0;
+pub const IOPOL_ATIME_UPDATES_DEFAULT: u32 = 0;
 pub const TARGET_OS_SIMULATOR: u32 = 0;
 pub const TARGET_IPHONE_SIMULATOR: u32 = 0;
 pub const MACH_PORT_NULL: u32 = 0;
@@ -31,38 +32,46 @@ pub const KAUTH_EXTLOOKUP_RESULT: u32 = 1;
 pub struct OpaqueJSContextGroup {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSContextGroupRef A group that associates JavaScript contexts with one another. Contexts in the same group may share and exchange JavaScript objects."]
 pub type JSContextGroupRef = *const OpaqueJSContextGroup;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct OpaqueJSContext {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSContextRef A JavaScript execution context. Holds the global object and other execution state."]
 pub type JSContextRef = *const OpaqueJSContext;
+#[doc = " @typedef JSGlobalContextRef A global JavaScript execution context. A JSGlobalContext is a JSContext."]
 pub type JSGlobalContextRef = *mut OpaqueJSContext;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct OpaqueJSString {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSStringRef A UTF16 character buffer. The fundamental string representation in JavaScript."]
 pub type JSStringRef = *mut OpaqueJSString;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct OpaqueJSClass {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSClassRef A JavaScript class. Used with JSObjectMake to construct objects with custom behavior."]
 pub type JSClassRef = *mut OpaqueJSClass;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct OpaqueJSPropertyNameArray {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSPropertyNameArrayRef An array of JavaScript property names."]
 pub type JSPropertyNameArrayRef = *mut OpaqueJSPropertyNameArray;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct OpaqueJSPropertyNameAccumulator {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSPropertyNameAccumulatorRef An ordered set used to collect the names of a JavaScript object\'s properties."]
 pub type JSPropertyNameAccumulatorRef = *mut OpaqueJSPropertyNameAccumulator;
+#[doc = " @typedef JSTypedArrayBytesDeallocator A function used to deallocate bytes passed to a Typed Array constructor. The function should take two arguments. The first is a pointer to the bytes that were originally passed to the Typed Array constructor. The second is a pointer to additional information desired at the time the bytes are to be freed."]
 pub type JSTypedArrayBytesDeallocator = ::std::option::Option<
     unsafe extern "C" fn(
         bytes: *mut ::std::os::raw::c_void,
@@ -74,9 +83,20 @@ pub type JSTypedArrayBytesDeallocator = ::std::option::Option<
 pub struct OpaqueJSValue {
     _unused: [u8; 0],
 }
+#[doc = " @typedef JSValueRef A JavaScript value. The base type for all JavaScript values, and polymorphic functions on them."]
 pub type JSValueRef = *const OpaqueJSValue;
+#[doc = " @typedef JSObjectRef A JavaScript object. A JSObject is a JSValue."]
 pub type JSObjectRef = *mut OpaqueJSValue;
 extern "C" {
+    #[doc = "@function JSEvaluateScript"]
+    #[doc = "@abstract Evaluates a string of JavaScript."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param script A JSString containing the script to evaluate."]
+    #[doc = "@param thisObject The object to use as \"this,\" or NULL to use the global object as \"this.\""]
+    #[doc = "@param sourceURL A JSString containing a URL for the script\'s source file. This is used by debuggers and when reporting exceptions. Pass NULL if you do not care to include source file information."]
+    #[doc = "@param startingLineNumber An integer value specifying the script\'s starting line number in the file located at sourceURL. This is only used when reporting exceptions. The value is one-based, so the first line is line 1 and invalid values are clamped to 1."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result The JSValue that results from evaluating script, or NULL if an exception is thrown."]
     #[link_name = "\u{1}_JSEvaluateScript"]
     pub fn JSEvaluateScript(
         ctx: JSContextRef,
@@ -88,6 +108,14 @@ extern "C" {
     ) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function JSCheckScriptSyntax"]
+    #[doc = "@abstract Checks for syntax errors in a string of JavaScript."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param script A JSString containing the script to check for syntax errors."]
+    #[doc = "@param sourceURL A JSString containing a URL for the script\'s source file. This is only used when reporting exceptions. Pass NULL if you do not care to include source file information in exceptions."]
+    #[doc = "@param startingLineNumber An integer value specifying the script\'s starting line number in the file located at sourceURL. This is only used when reporting exceptions. The value is one-based, so the first line is line 1 and invalid values are clamped to 1."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store a syntax error exception, if any. Pass NULL if you do not care to store a syntax error exception."]
+    #[doc = "@result true if the script is syntactically correct, otherwise false."]
     #[link_name = "\u{1}_JSCheckScriptSyntax"]
     pub fn JSCheckScriptSyntax(
         ctx: JSContextRef,
@@ -98,22 +126,41 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function JSGarbageCollect"]
+    #[doc = "@abstract Performs a JavaScript garbage collection."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@discussion JavaScript values that are on the machine stack, in a register,"]
+    #[doc = "protected by JSValueProtect, set as the global object of an execution context,"]
+    #[doc = "or reachable from any such value will not be collected."]
+    #[doc = ""]
+    #[doc = "During JavaScript execution, you are not required to call this function; the"]
+    #[doc = "JavaScript engine will garbage collect as needed. JavaScript values created"]
+    #[doc = "within a context group are automatically destroyed when the last reference"]
+    #[doc = "to the context group is released."]
     #[link_name = "\u{1}_JSGarbageCollect"]
     pub fn JSGarbageCollect(ctx: JSContextRef);
 }
-pub const QOS_CLASS_USER_INTERACTIVE: _bindgen_ty_37 = 33;
-pub const QOS_CLASS_USER_INITIATED: _bindgen_ty_37 = 25;
-pub const QOS_CLASS_DEFAULT: _bindgen_ty_37 = 21;
-pub const QOS_CLASS_UTILITY: _bindgen_ty_37 = 17;
-pub const QOS_CLASS_BACKGROUND: _bindgen_ty_37 = 9;
-pub const QOS_CLASS_UNSPECIFIED: _bindgen_ty_37 = 0;
-pub type _bindgen_ty_37 = u32;
+pub const QOS_CLASS_USER_INTERACTIVE: _bindgen_ty_38 = 33;
+pub const QOS_CLASS_USER_INITIATED: _bindgen_ty_38 = 25;
+pub const QOS_CLASS_DEFAULT: _bindgen_ty_38 = 21;
+pub const QOS_CLASS_UTILITY: _bindgen_ty_38 = 17;
+pub const QOS_CLASS_BACKGROUND: _bindgen_ty_38 = 9;
+pub const QOS_CLASS_UNSPECIFIED: _bindgen_ty_38 = 0;
+pub type _bindgen_ty_38 = u32;
 pub const JSType_kJSTypeUndefined: JSType = 0;
 pub const JSType_kJSTypeNull: JSType = 1;
 pub const JSType_kJSTypeBoolean: JSType = 2;
 pub const JSType_kJSTypeNumber: JSType = 3;
 pub const JSType_kJSTypeString: JSType = 4;
 pub const JSType_kJSTypeObject: JSType = 5;
+#[doc = "@enum JSType"]
+#[doc = "@abstract     A constant identifying the type of a JSValue."]
+#[doc = "@constant     kJSTypeUndefined  The unique undefined value."]
+#[doc = "@constant     kJSTypeNull       The unique null value."]
+#[doc = "@constant     kJSTypeBoolean    A primitive boolean value, one of true or false."]
+#[doc = "@constant     kJSTypeNumber     A primitive number value."]
+#[doc = "@constant     kJSTypeString     A primitive string value."]
+#[doc = "@constant     kJSTypeObject     An object value (meaning that this JSValueRef is a JSObjectRef)."]
 pub type JSType = u32;
 pub const JSTypedArrayType_kJSTypedArrayTypeInt8Array: JSTypedArrayType = 0;
 pub const JSTypedArrayType_kJSTypedArrayTypeInt16Array: JSTypedArrayType = 1;
@@ -126,36 +173,91 @@ pub const JSTypedArrayType_kJSTypedArrayTypeFloat32Array: JSTypedArrayType = 7;
 pub const JSTypedArrayType_kJSTypedArrayTypeFloat64Array: JSTypedArrayType = 8;
 pub const JSTypedArrayType_kJSTypedArrayTypeArrayBuffer: JSTypedArrayType = 9;
 pub const JSTypedArrayType_kJSTypedArrayTypeNone: JSTypedArrayType = 10;
+#[doc = "@enum JSTypedArrayType"]
+#[doc = "@abstract     A constant identifying the Typed Array type of a JSObjectRef."]
+#[doc = "@constant     kJSTypedArrayTypeInt8Array            Int8Array"]
+#[doc = "@constant     kJSTypedArrayTypeInt16Array           Int16Array"]
+#[doc = "@constant     kJSTypedArrayTypeInt32Array           Int32Array"]
+#[doc = "@constant     kJSTypedArrayTypeUint8Array           Uint8Array"]
+#[doc = "@constant     kJSTypedArrayTypeUint8ClampedArray    Uint8ClampedArray"]
+#[doc = "@constant     kJSTypedArrayTypeUint16Array          Uint16Array"]
+#[doc = "@constant     kJSTypedArrayTypeUint32Array          Uint32Array"]
+#[doc = "@constant     kJSTypedArrayTypeFloat32Array         Float32Array"]
+#[doc = "@constant     kJSTypedArrayTypeFloat64Array         Float64Array"]
+#[doc = "@constant     kJSTypedArrayTypeArrayBuffer          ArrayBuffer"]
+#[doc = "@constant     kJSTypedArrayTypeNone                 Not a Typed Array"]
+#[doc = ""]
 pub type JSTypedArrayType = u32;
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Returns a JavaScript value\'s type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue whose type you want to obtain."]
+    #[doc = "@result         A value of type JSType that identifies value\'s type."]
     #[link_name = "\u{1}_JSValueGetType"]
     pub fn JSValueGetType(ctx: JSContextRef, value: JSValueRef) -> JSType;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the undefined type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the undefined type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsUndefined"]
     pub fn JSValueIsUndefined(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the null type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the null type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsNull"]
     pub fn JSValueIsNull(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the boolean type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the boolean type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsBoolean"]
     pub fn JSValueIsBoolean(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the number type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the number type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsNumber"]
     pub fn JSValueIsNumber(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the string type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the string type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsString"]
     pub fn JSValueIsString(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value\'s type is the object type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value\'s type is the object type, otherwise false."]
     #[link_name = "\u{1}_JSValueIsObject"]
     pub fn JSValueIsObject(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether a JavaScript value is an object with a given class in its class chain."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param value The JSValue to test."]
+    #[doc = "@param jsClass The JSClass to test against."]
+    #[doc = "@result true if value is an object and has jsClass in its class chain, otherwise false."]
     #[link_name = "\u{1}_JSValueIsObjectOfClass"]
     pub fn JSValueIsObjectOfClass(
         ctx: JSContextRef,
@@ -164,14 +266,30 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value is an array."]
+    #[doc = "@param ctx      The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value is an array, otherwise false."]
     #[link_name = "\u{1}_JSValueIsArray"]
     pub fn JSValueIsArray(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether a JavaScript value is a date."]
+    #[doc = "@param ctx      The execution context to use."]
+    #[doc = "@param value    The JSValue to test."]
+    #[doc = "@result         true if value is a date, otherwise false."]
     #[link_name = "\u{1}_JSValueIsDate"]
     pub fn JSValueIsDate(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns a JavaScript value\'s Typed Array type."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param value        The JSValue whose Typed Array type to return."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A value of type JSTypedArrayType that identifies value\'s Typed Array type, or kJSTypedArrayTypeNone if the value is not a Typed Array object."]
     #[link_name = "\u{1}_JSValueGetTypedArrayType"]
     pub fn JSValueGetTypedArrayType(
         ctx: JSContextRef,
@@ -180,6 +298,13 @@ extern "C" {
     ) -> JSTypedArrayType;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether two JavaScript values are equal, as compared by the JS == operator."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param a The first value to test."]
+    #[doc = "@param b The second value to test."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result true if the two values are equal, false if they are not equal or an exception is thrown."]
     #[link_name = "\u{1}_JSValueIsEqual"]
     pub fn JSValueIsEqual(
         ctx: JSContextRef,
@@ -189,10 +314,23 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Tests whether two JavaScript values are strict equal, as compared by the JS === operator."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param a        The first value to test."]
+    #[doc = "@param b        The second value to test."]
+    #[doc = "@result         true if the two values are strict equal, otherwise false."]
     #[link_name = "\u{1}_JSValueIsStrictEqual"]
     pub fn JSValueIsStrictEqual(ctx: JSContextRef, a: JSValueRef, b: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether a JavaScript value is an object constructed by a given constructor, as compared by the JS instanceof operator."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param value The JSValue to test."]
+    #[doc = "@param constructor The constructor to test against."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result true if value is an object constructed by constructor, as compared by the JS instanceof operator, otherwise false."]
     #[link_name = "\u{1}_JSValueIsInstanceOfConstructor"]
     pub fn JSValueIsInstanceOfConstructor(
         ctx: JSContextRef,
@@ -202,30 +340,66 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value of the undefined type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@result         The unique undefined value."]
     #[link_name = "\u{1}_JSValueMakeUndefined"]
     pub fn JSValueMakeUndefined(ctx: JSContextRef) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value of the null type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@result         The unique null value."]
     #[link_name = "\u{1}_JSValueMakeNull"]
     pub fn JSValueMakeNull(ctx: JSContextRef) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value of the boolean type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param boolean  The bool to assign to the newly created JSValue."]
+    #[doc = "@result         A JSValue of the boolean type, representing the value of boolean."]
     #[link_name = "\u{1}_JSValueMakeBoolean"]
     pub fn JSValueMakeBoolean(ctx: JSContextRef, boolean: bool) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value of the number type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param number   The double to assign to the newly created JSValue."]
+    #[doc = "@result         A JSValue of the number type, representing the value of number."]
     #[link_name = "\u{1}_JSValueMakeNumber"]
     pub fn JSValueMakeNumber(ctx: JSContextRef, number: f64) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value of the string type."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param string   The JSString to assign to the newly created JSValue. The"]
+    #[doc = "newly created JSValue retains string, and releases it upon garbage collection."]
+    #[doc = "@result         A JSValue of the string type, representing the value of string."]
     #[link_name = "\u{1}_JSValueMakeString"]
     pub fn JSValueMakeString(ctx: JSContextRef, string: JSStringRef) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript value from a JSON formatted string."]
+    #[doc = "@param ctx      The execution context to use."]
+    #[doc = "@param string   The JSString containing the JSON string to be parsed."]
+    #[doc = "@result         A JSValue containing the parsed value, or NULL if the input is invalid."]
     #[link_name = "\u{1}_JSValueMakeFromJSONString"]
     pub fn JSValueMakeFromJSONString(ctx: JSContextRef, string: JSStringRef) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Creates a JavaScript string containing the JSON serialized representation of a JS value."]
+    #[doc = "@param ctx      The execution context to use."]
+    #[doc = "@param value    The value to serialize."]
+    #[doc = "@param indent   The number of spaces to indent when nesting.  If 0, the resulting JSON will not contains newlines.  The size of the indent is clamped to 10 spaces."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result         A JSString with the result of serialization, or NULL if an exception is thrown."]
     #[link_name = "\u{1}_JSValueCreateJSONString"]
     pub fn JSValueCreateJSONString(
         ctx: JSContextRef,
@@ -235,15 +409,32 @@ extern "C" {
     ) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Converts a JavaScript value to boolean and returns the resulting boolean."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to convert."]
+    #[doc = "@result         The boolean result of conversion."]
     #[link_name = "\u{1}_JSValueToBoolean"]
     pub fn JSValueToBoolean(ctx: JSContextRef, value: JSValueRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Converts a JavaScript value to number and returns the resulting number."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to convert."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result         The numeric result of conversion, or NaN if an exception is thrown."]
     #[link_name = "\u{1}_JSValueToNumber"]
     pub fn JSValueToNumber(ctx: JSContextRef, value: JSValueRef, exception: *mut JSValueRef)
         -> f64;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Converts a JavaScript value to string and copies the result into a JavaScript string."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to convert."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result         A JSString with the result of conversion, or NULL if an exception is thrown. Ownership follows the Create Rule."]
     #[link_name = "\u{1}_JSValueToStringCopy"]
     pub fn JSValueToStringCopy(
         ctx: JSContextRef,
@@ -252,6 +443,12 @@ extern "C" {
     ) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Converts a JavaScript value to object and returns the resulting object."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param value    The JSValue to convert."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result         The JSObject result of conversion, or NULL if an exception is thrown."]
     #[link_name = "\u{1}_JSValueToObject"]
     pub fn JSValueToObject(
         ctx: JSContextRef,
@@ -260,30 +457,105 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Protects a JavaScript value from garbage collection."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param value The JSValue to protect."]
+    #[doc = "@discussion Use this method when you want to store a JSValue in a global or on the heap, where the garbage collector will not be able to discover your reference to it."]
+    #[doc = ""]
+    #[doc = "A value may be protected multiple times and must be unprotected an equal number of times before becoming eligible for garbage collection."]
     #[link_name = "\u{1}_JSValueProtect"]
     pub fn JSValueProtect(ctx: JSContextRef, value: JSValueRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract       Unprotects a JavaScript value from garbage collection."]
+    #[doc = "@param ctx      The execution context to use."]
+    #[doc = "@param value    The JSValue to unprotect."]
+    #[doc = "@discussion     A value may be protected multiple times and must be unprotected an"]
+    #[doc = "equal number of times before becoming eligible for garbage collection."]
     #[link_name = "\u{1}_JSValueUnprotect"]
     pub fn JSValueUnprotect(ctx: JSContextRef, value: JSValueRef);
 }
-pub const kJSPropertyAttributeNone: _bindgen_ty_64 = 0;
-pub const kJSPropertyAttributeReadOnly: _bindgen_ty_64 = 2;
-pub const kJSPropertyAttributeDontEnum: _bindgen_ty_64 = 4;
-pub const kJSPropertyAttributeDontDelete: _bindgen_ty_64 = 8;
-pub type _bindgen_ty_64 = u32;
-pub type JSPropertyAttributes = ::std::os::raw::c_uint;
-pub const kJSClassAttributeNone: _bindgen_ty_65 = 0;
-pub const kJSClassAttributeNoAutomaticPrototype: _bindgen_ty_65 = 2;
+pub const kJSPropertyAttributeNone: _bindgen_ty_65 = 0;
+pub const kJSPropertyAttributeReadOnly: _bindgen_ty_65 = 2;
+pub const kJSPropertyAttributeDontEnum: _bindgen_ty_65 = 4;
+pub const kJSPropertyAttributeDontDelete: _bindgen_ty_65 = 8;
+#[doc = "@enum JSPropertyAttribute"]
+#[doc = "@constant kJSPropertyAttributeNone         Specifies that a property has no special attributes."]
+#[doc = "@constant kJSPropertyAttributeReadOnly     Specifies that a property is read-only."]
+#[doc = "@constant kJSPropertyAttributeDontEnum     Specifies that a property should not be enumerated by JSPropertyEnumerators and JavaScript for...in loops."]
+#[doc = "@constant kJSPropertyAttributeDontDelete   Specifies that the delete operation should fail on a property."]
 pub type _bindgen_ty_65 = u32;
+#[doc = "@typedef JSPropertyAttributes"]
+#[doc = "@abstract A set of JSPropertyAttributes. Combine multiple attributes by logically ORing them together."]
+pub type JSPropertyAttributes = ::std::os::raw::c_uint;
+pub const kJSClassAttributeNone: _bindgen_ty_66 = 0;
+pub const kJSClassAttributeNoAutomaticPrototype: _bindgen_ty_66 = 2;
+#[doc = "@enum JSClassAttribute"]
+#[doc = "@constant kJSClassAttributeNone Specifies that a class has no special attributes."]
+#[doc = "@constant kJSClassAttributeNoAutomaticPrototype Specifies that a class should not automatically generate a shared prototype for its instance objects. Use kJSClassAttributeNoAutomaticPrototype in combination with JSObjectSetPrototype to manage prototypes manually."]
+pub type _bindgen_ty_66 = u32;
+#[doc = "@typedef JSClassAttributes"]
+#[doc = "@abstract A set of JSClassAttributes. Combine multiple attributes by logically ORing them together."]
 pub type JSClassAttributes = ::std::os::raw::c_uint;
+#[doc = "@typedef JSObjectInitializeCallback"]
+#[doc = "@abstract The callback invoked when an object is first created."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject being created."]
+#[doc = "@discussion If you named your function Initialize, you would declare it like this:"]
+#[doc = ""]
+#[doc = "void Initialize(JSContextRef ctx, JSObjectRef object);"]
+#[doc = ""]
+#[doc = "Unlike the other object callbacks, the initialize callback is called on the least"]
+#[doc = "derived class (the parent class) first, and the most derived class last."]
 pub type JSObjectInitializeCallback =
     ::std::option::Option<unsafe extern "C" fn(ctx: JSContextRef, object: JSObjectRef)>;
+#[doc = "@typedef JSObjectFinalizeCallback"]
+#[doc = "@abstract The callback invoked when an object is finalized (prepared for garbage collection). An object may be finalized on any thread."]
+#[doc = "@param object The JSObject being finalized."]
+#[doc = "@discussion If you named your function Finalize, you would declare it like this:"]
+#[doc = ""]
+#[doc = "void Finalize(JSObjectRef object);"]
+#[doc = ""]
+#[doc = "The finalize callback is called on the most derived class first, and the least"]
+#[doc = "derived class (the parent class) last."]
+#[doc = ""]
+#[doc = "You must not call any function that may cause a garbage collection or an allocation"]
+#[doc = "of a garbage collected object from within a JSObjectFinalizeCallback. This includes"]
+#[doc = "all functions that have a JSContextRef parameter."]
 pub type JSObjectFinalizeCallback =
     ::std::option::Option<unsafe extern "C" fn(object: JSObjectRef)>;
+#[doc = "@typedef JSObjectHasPropertyCallback"]
+#[doc = "@abstract The callback invoked when determining whether an object has a property."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject to search for the property."]
+#[doc = "@param propertyName A JSString containing the name of the property look up."]
+#[doc = "@result true if object has the property, otherwise false."]
+#[doc = "@discussion If you named your function HasProperty, you would declare it like this:"]
+#[doc = ""]
+#[doc = "bool HasProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName);"]
+#[doc = ""]
+#[doc = "If this function returns false, the hasProperty request forwards to object\'s statically declared properties, then its parent class chain (which includes the default object class), then its prototype chain."]
+#[doc = ""]
+#[doc = "This callback enables optimization in cases where only a property\'s existence needs to be known, not its value, and computing its value would be expensive."]
+#[doc = ""]
+#[doc = "If this callback is NULL, the getProperty callback will be used to service hasProperty requests."]
 pub type JSObjectHasPropertyCallback = ::std::option::Option<
     unsafe extern "C" fn(ctx: JSContextRef, object: JSObjectRef, propertyName: JSStringRef) -> bool,
 >;
+#[doc = "@typedef JSObjectGetPropertyCallback"]
+#[doc = "@abstract The callback invoked when getting a property\'s value."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject to search for the property."]
+#[doc = "@param propertyName A JSString containing the name of the property to get."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result The property\'s value if object has the property, otherwise NULL."]
+#[doc = "@discussion If you named your function GetProperty, you would declare it like this:"]
+#[doc = ""]
+#[doc = "JSValueRef GetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If this function returns NULL, the get request forwards to object\'s statically declared properties, then its parent class chain (which includes the default object class), then its prototype chain."]
 pub type JSObjectGetPropertyCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -292,6 +564,19 @@ pub type JSObjectGetPropertyCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> JSValueRef,
 >;
+#[doc = "@typedef JSObjectSetPropertyCallback"]
+#[doc = "@abstract The callback invoked when setting a property\'s value."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject on which to set the property\'s value."]
+#[doc = "@param propertyName A JSString containing the name of the property to set."]
+#[doc = "@param value A JSValue to use as the property\'s value."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result true if the property was set, otherwise false."]
+#[doc = "@discussion If you named your function SetProperty, you would declare it like this:"]
+#[doc = ""]
+#[doc = "bool SetProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef value, JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If this function returns false, the set request forwards to object\'s statically declared properties, then its parent class chain (which includes the default object class)."]
 pub type JSObjectSetPropertyCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -301,6 +586,18 @@ pub type JSObjectSetPropertyCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> bool,
 >;
+#[doc = "@typedef JSObjectDeletePropertyCallback"]
+#[doc = "@abstract The callback invoked when deleting a property."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject in which to delete the property."]
+#[doc = "@param propertyName A JSString containing the name of the property to delete."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result true if propertyName was successfully deleted, otherwise false."]
+#[doc = "@discussion If you named your function DeleteProperty, you would declare it like this:"]
+#[doc = ""]
+#[doc = "bool DeleteProperty(JSContextRef ctx, JSObjectRef object, JSStringRef propertyName, JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If this function returns false, the delete request forwards to object\'s statically declared properties, then its parent class chain (which includes the default object class)."]
 pub type JSObjectDeletePropertyCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -309,6 +606,18 @@ pub type JSObjectDeletePropertyCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> bool,
 >;
+#[doc = "@typedef JSObjectGetPropertyNamesCallback"]
+#[doc = "@abstract The callback invoked when collecting the names of an object\'s properties."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject whose property names are being collected."]
+#[doc = "@param propertyNames A JavaScript property name accumulator in which to accumulate the names of object\'s properties."]
+#[doc = "@discussion If you named your function GetPropertyNames, you would declare it like this:"]
+#[doc = ""]
+#[doc = "void GetPropertyNames(JSContextRef ctx, JSObjectRef object, JSPropertyNameAccumulatorRef propertyNames);"]
+#[doc = ""]
+#[doc = "Property name accumulators are used by JSObjectCopyPropertyNames and JavaScript for...in loops."]
+#[doc = ""]
+#[doc = "Use JSPropertyNameAccumulatorAddName to add property names to accumulator. A class\'s getPropertyNames callback only needs to provide the names of properties that the class vends through a custom getProperty or setProperty callback. Other properties, including statically declared properties, properties vended by other classes, and properties belonging to object\'s prototype, are added independently."]
 pub type JSObjectGetPropertyNamesCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -316,6 +625,22 @@ pub type JSObjectGetPropertyNamesCallback = ::std::option::Option<
         propertyNames: JSPropertyNameAccumulatorRef,
     ),
 >;
+#[doc = "@typedef JSObjectCallAsFunctionCallback"]
+#[doc = "@abstract The callback invoked when an object is called as a function."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param function A JSObject that is the function being called."]
+#[doc = "@param thisObject A JSObject that is the \'this\' variable in the function\'s scope."]
+#[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+#[doc = "@param arguments A JSValue array of the  arguments passed to the function."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result A JSValue that is the function\'s return value."]
+#[doc = "@discussion If you named your function CallAsFunction, you would declare it like this:"]
+#[doc = ""]
+#[doc = "JSValueRef CallAsFunction(JSContextRef ctx, JSObjectRef function, JSObjectRef thisObject, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If your callback were invoked by the JavaScript expression \'myObject.myFunction()\', function would be set to myFunction, and thisObject would be set to myObject."]
+#[doc = ""]
+#[doc = "If this callback is NULL, calling your object as a function will throw an exception."]
 pub type JSObjectCallAsFunctionCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -326,6 +651,21 @@ pub type JSObjectCallAsFunctionCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> JSValueRef,
 >;
+#[doc = "@typedef JSObjectCallAsConstructorCallback"]
+#[doc = "@abstract The callback invoked when an object is used as a constructor in a \'new\' expression."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param constructor A JSObject that is the constructor being called."]
+#[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+#[doc = "@param arguments A JSValue array of the  arguments passed to the function."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result A JSObject that is the constructor\'s return value."]
+#[doc = "@discussion If you named your function CallAsConstructor, you would declare it like this:"]
+#[doc = ""]
+#[doc = "JSObjectRef CallAsConstructor(JSContextRef ctx, JSObjectRef constructor, size_t argumentCount, const JSValueRef arguments[], JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If your callback were invoked by the JavaScript expression \'new myConstructor()\', constructor would be set to myConstructor."]
+#[doc = ""]
+#[doc = "If this callback is NULL, using your object as a constructor in a \'new\' expression will throw an exception."]
 pub type JSObjectCallAsConstructorCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -335,6 +675,22 @@ pub type JSObjectCallAsConstructorCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> JSObjectRef,
 >;
+#[doc = "@typedef JSObjectHasInstanceCallback"]
+#[doc = "@abstract hasInstance The callback invoked when an object is used as the target of an \'instanceof\' expression."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param constructor The JSObject that is the target of the \'instanceof\' expression."]
+#[doc = "@param possibleInstance The JSValue being tested to determine if it is an instance of constructor."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result true if possibleInstance is an instance of constructor, otherwise false."]
+#[doc = "@discussion If you named your function HasInstance, you would declare it like this:"]
+#[doc = ""]
+#[doc = "bool HasInstance(JSContextRef ctx, JSObjectRef constructor, JSValueRef possibleInstance, JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If your callback were invoked by the JavaScript expression \'someValue instanceof myObject\', constructor would be set to myObject and possibleInstance would be set to someValue."]
+#[doc = ""]
+#[doc = "If this callback is NULL, \'instanceof\' expressions that target your object will return false."]
+#[doc = ""]
+#[doc = "Standard JavaScript practice calls for objects that implement the callAsConstructor callback to implement the hasInstance callback as well."]
 pub type JSObjectHasInstanceCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -343,6 +699,20 @@ pub type JSObjectHasInstanceCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> bool,
 >;
+#[doc = "@typedef JSObjectConvertToTypeCallback"]
+#[doc = "@abstract The callback invoked when converting an object to a particular JavaScript type."]
+#[doc = "@param ctx The execution context to use."]
+#[doc = "@param object The JSObject to convert."]
+#[doc = "@param type A JSType specifying the JavaScript type to convert to."]
+#[doc = "@param exception A pointer to a JSValueRef in which to return an exception, if any."]
+#[doc = "@result The objects\'s converted value, or NULL if the object was not converted."]
+#[doc = "@discussion If you named your function ConvertToType, you would declare it like this:"]
+#[doc = ""]
+#[doc = "JSValueRef ConvertToType(JSContextRef ctx, JSObjectRef object, JSType type, JSValueRef* exception);"]
+#[doc = ""]
+#[doc = "If this function returns false, the conversion request forwards to object\'s parent class chain (which includes the default object class)."]
+#[doc = ""]
+#[doc = "This function is only invoked when converting an object to number or string. An object converted to boolean is \'true.\' An object converted to object is itself."]
 pub type JSObjectConvertToTypeCallback = ::std::option::Option<
     unsafe extern "C" fn(
         ctx: JSContextRef,
@@ -351,6 +721,12 @@ pub type JSObjectConvertToTypeCallback = ::std::option::Option<
         exception: *mut JSValueRef,
     ) -> JSValueRef,
 >;
+#[doc = "@struct JSStaticValue"]
+#[doc = "@abstract This structure describes a statically declared value property."]
+#[doc = "@field name A null-terminated UTF8 string containing the property\'s name."]
+#[doc = "@field getProperty A JSObjectGetPropertyCallback to invoke when getting the property\'s value."]
+#[doc = "@field setProperty A JSObjectSetPropertyCallback to invoke when setting the property\'s value. May be NULL if the ReadOnly attribute is set."]
+#[doc = "@field attributes A logically ORed set of JSPropertyAttributes to give to the property."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct JSStaticValue {
@@ -412,6 +788,11 @@ fn bindgen_test_layout_JSStaticValue() {
         )
     );
 }
+#[doc = "@struct JSStaticFunction"]
+#[doc = "@abstract This structure describes a statically declared function property."]
+#[doc = "@field name A null-terminated UTF8 string containing the property\'s name."]
+#[doc = "@field callAsFunction A JSObjectCallAsFunctionCallback to invoke when the property is called as a function."]
+#[doc = "@field attributes A logically ORed set of JSPropertyAttributes to give to the property."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct JSStaticFunction {
@@ -462,6 +843,37 @@ fn bindgen_test_layout_JSStaticFunction() {
         )
     );
 }
+#[doc = "@struct JSClassDefinition"]
+#[doc = "@abstract This structure contains properties and callbacks that define a type of object. All fields other than the version field are optional. Any pointer may be NULL."]
+#[doc = "@field version The version number of this structure. The current version is 0."]
+#[doc = "@field attributes A logically ORed set of JSClassAttributes to give to the class."]
+#[doc = "@field className A null-terminated UTF8 string containing the class\'s name."]
+#[doc = "@field parentClass A JSClass to set as the class\'s parent class. Pass NULL use the default object class."]
+#[doc = "@field staticValues A JSStaticValue array containing the class\'s statically declared value properties. Pass NULL to specify no statically declared value properties. The array must be terminated by a JSStaticValue whose name field is NULL."]
+#[doc = "@field staticFunctions A JSStaticFunction array containing the class\'s statically declared function properties. Pass NULL to specify no statically declared function properties. The array must be terminated by a JSStaticFunction whose name field is NULL."]
+#[doc = "@field initialize The callback invoked when an object is first created. Use this callback to initialize the object."]
+#[doc = "@field finalize The callback invoked when an object is finalized (prepared for garbage collection). Use this callback to release resources allocated for the object, and perform other cleanup."]
+#[doc = "@field hasProperty The callback invoked when determining whether an object has a property. If this field is NULL, getProperty is called instead. The hasProperty callback enables optimization in cases where only a property\'s existence needs to be known, not its value, and computing its value is expensive."]
+#[doc = "@field getProperty The callback invoked when getting a property\'s value."]
+#[doc = "@field setProperty The callback invoked when setting a property\'s value."]
+#[doc = "@field deleteProperty The callback invoked when deleting a property."]
+#[doc = "@field getPropertyNames The callback invoked when collecting the names of an object\'s properties."]
+#[doc = "@field callAsFunction The callback invoked when an object is called as a function."]
+#[doc = "@field hasInstance The callback invoked when an object is used as the target of an \'instanceof\' expression."]
+#[doc = "@field callAsConstructor The callback invoked when an object is used as a constructor in a \'new\' expression."]
+#[doc = "@field convertToType The callback invoked when converting an object to a particular JavaScript type."]
+#[doc = "@discussion The staticValues and staticFunctions arrays are the simplest and most efficient means for vending custom properties. Statically declared properties autmatically service requests like getProperty, setProperty, and getPropertyNames. Property access callbacks are required only to implement unusual properties, like array indexes, whose names are not known at compile-time."]
+#[doc = ""]
+#[doc = "If you named your getter function \"GetX\" and your setter function \"SetX\", you would declare a JSStaticValue array containing \"X\" like this:"]
+#[doc = ""]
+#[doc = "JSStaticValue StaticValueArray[] = {"]
+#[doc = "{ \"X\", GetX, SetX, kJSPropertyAttributeNone },"]
+#[doc = "{ 0, 0, 0, 0 }"]
+#[doc = "};"]
+#[doc = ""]
+#[doc = "Standard JavaScript practice calls for storing function objects in prototypes, so they can be shared. The default JSClass created by JSClassCreate follows this idiom, instantiating objects with a shared, automatically generating prototype containing the class\'s function objects. The kJSClassAttributeNoAutomaticPrototype attribute specifies that a JSClass should not automatically generate such a prototype. The resulting JSClass instantiates objects with the default object prototype, and gives each instance object its own copy of the class\'s function objects."]
+#[doc = ""]
+#[doc = "A NULL callback specifies that the default object callback should substitute, except in the case of hasProperty, where it specifies that getProperty should substitute."]
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct JSClassDefinition {
@@ -681,18 +1093,38 @@ extern "C" {
     pub static kJSClassDefinitionEmpty: JSClassDefinition;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript class suitable for use with JSObjectMake."]
+    #[doc = "@param definition A JSClassDefinition that defines the class."]
+    #[doc = "@result A JSClass with the given definition. Ownership follows the Create Rule."]
     #[link_name = "\u{1}_JSClassCreate"]
     pub fn JSClassCreate(definition: *const JSClassDefinition) -> JSClassRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Retains a JavaScript class."]
+    #[doc = "@param jsClass The JSClass to retain."]
+    #[doc = "@result A JSClass that is the same as jsClass."]
     #[link_name = "\u{1}_JSClassRetain"]
     pub fn JSClassRetain(jsClass: JSClassRef) -> JSClassRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Releases a JavaScript class."]
+    #[doc = "@param jsClass The JSClass to release."]
     #[link_name = "\u{1}_JSClassRelease"]
     pub fn JSClassRelease(jsClass: JSClassRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript object."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param jsClass The JSClass to assign to the object. Pass NULL to use the default object class."]
+    #[doc = "@param data A void* to set as the object\'s private data. Pass NULL to specify no private data."]
+    #[doc = "@result A JSObject with the given class and private data."]
+    #[doc = "@discussion The default object class does not allocate storage for private data, so you must provide a non-NULL jsClass to JSObjectMake if you want your object to be able to store private data."]
+    #[doc = ""]
+    #[doc = "data is set on the created object before the intialize methods in its class chain are called. This enables the initialize methods to retrieve and manipulate data through JSObjectGetPrivate."]
     #[link_name = "\u{1}_JSObjectMake"]
     pub fn JSObjectMake(
         ctx: JSContextRef,
@@ -701,6 +1133,12 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Convenience method for creating a JavaScript function with a given callback as its implementation."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param name A JSString containing the function\'s name. This will be used when converting the function to string. Pass NULL to create an anonymous function."]
+    #[doc = "@param callAsFunction The JSObjectCallAsFunctionCallback to invoke when the function is called."]
+    #[doc = "@result A JSObject that is a function. The object\'s prototype will be the default function prototype."]
     #[link_name = "\u{1}_JSObjectMakeFunctionWithCallback"]
     pub fn JSObjectMakeFunctionWithCallback(
         ctx: JSContextRef,
@@ -709,6 +1147,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Convenience method for creating a JavaScript constructor."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param jsClass A JSClass that is the class your constructor will assign to the objects its constructs. jsClass will be used to set the constructor\'s .prototype property, and to evaluate \'instanceof\' expressions. Pass NULL to use the default object class."]
+    #[doc = "@param callAsConstructor A JSObjectCallAsConstructorCallback to invoke when your constructor is used in a \'new\' expression. Pass NULL to use the default object constructor."]
+    #[doc = "@result A JSObject that is a constructor. The object\'s prototype will be the default object prototype."]
+    #[doc = "@discussion The default object constructor takes no arguments and constructs an object of class jsClass with no private data."]
     #[link_name = "\u{1}_JSObjectMakeConstructor"]
     pub fn JSObjectMakeConstructor(
         ctx: JSContextRef,
@@ -717,6 +1162,15 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript Array object."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of data to populate the Array with. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result A JSObject that is an Array."]
+    #[doc = "@discussion The behavior of this function does not exactly match the behavior of the built-in Array constructor. Specifically, if one argument"]
+    #[doc = "is supplied, this function returns an array with one element."]
     #[link_name = "\u{1}_JSObjectMakeArray"]
     pub fn JSObjectMakeArray(
         ctx: JSContextRef,
@@ -726,6 +1180,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript Date object, as if by invoking the built-in Date constructor."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of arguments to pass to the Date Constructor. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result A JSObject that is a Date."]
     #[link_name = "\u{1}_JSObjectMakeDate"]
     pub fn JSObjectMakeDate(
         ctx: JSContextRef,
@@ -735,6 +1196,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript Error object, as if by invoking the built-in Error constructor."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of arguments to pass to the Error Constructor. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result A JSObject that is a Error."]
     #[link_name = "\u{1}_JSObjectMakeError"]
     pub fn JSObjectMakeError(
         ctx: JSContextRef,
@@ -744,6 +1212,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript RegExp object, as if by invoking the built-in RegExp constructor."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of arguments to pass to the RegExp Constructor. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result A JSObject that is a RegExp."]
     #[link_name = "\u{1}_JSObjectMakeRegExp"]
     pub fn JSObjectMakeRegExp(
         ctx: JSContextRef,
@@ -753,6 +1228,18 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a function with a given script as its body."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param name A JSString containing the function\'s name. This will be used when converting the function to string. Pass NULL to create an anonymous function."]
+    #[doc = "@param parameterCount An integer count of the number of parameter names in parameterNames."]
+    #[doc = "@param parameterNames A JSString array containing the names of the function\'s parameters. Pass NULL if parameterCount is 0."]
+    #[doc = "@param body A JSString containing the script to use as the function\'s body."]
+    #[doc = "@param sourceURL A JSString containing a URL for the script\'s source file. This is only used when reporting exceptions. Pass NULL if you do not care to include source file information in exceptions."]
+    #[doc = "@param startingLineNumber An integer value specifying the script\'s starting line number in the file located at sourceURL. This is only used when reporting exceptions. The value is one-based, so the first line is line 1 and invalid values are clamped to 1."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store a syntax error exception, if any. Pass NULL if you do not care to store a syntax error exception."]
+    #[doc = "@result A JSObject that is a function, or NULL if either body or parameterNames contains a syntax error. The object\'s prototype will be the default function prototype."]
+    #[doc = "@discussion Use this method when you want to execute a script repeatedly, to avoid the cost of re-parsing the script before each execution."]
     #[link_name = "\u{1}_JSObjectMakeFunction"]
     pub fn JSObjectMakeFunction(
         ctx: JSContextRef,
@@ -766,14 +1253,29 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets an object\'s prototype."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param object A JSObject whose prototype you want to get."]
+    #[doc = "@result A JSValue that is the object\'s prototype."]
     #[link_name = "\u{1}_JSObjectGetPrototype"]
     pub fn JSObjectGetPrototype(ctx: JSContextRef, object: JSObjectRef) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Sets an object\'s prototype."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param object The JSObject whose prototype you want to set."]
+    #[doc = "@param value A JSValue to set as the object\'s prototype."]
     #[link_name = "\u{1}_JSObjectSetPrototype"]
     pub fn JSObjectSetPrototype(ctx: JSContextRef, object: JSObjectRef, value: JSValueRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether an object has a given property."]
+    #[doc = "@param object The JSObject to test."]
+    #[doc = "@param propertyName A JSString containing the property\'s name."]
+    #[doc = "@result true if the object has a property whose name matches propertyName, otherwise false."]
     #[link_name = "\u{1}_JSObjectHasProperty"]
     pub fn JSObjectHasProperty(
         ctx: JSContextRef,
@@ -782,6 +1284,13 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets a property from an object."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject whose property you want to get."]
+    #[doc = "@param propertyName A JSString containing the property\'s name."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result The property\'s value if object has the property, otherwise the undefined value."]
     #[link_name = "\u{1}_JSObjectGetProperty"]
     pub fn JSObjectGetProperty(
         ctx: JSContextRef,
@@ -791,6 +1300,14 @@ extern "C" {
     ) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Sets a property on an object."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject whose property you want to set."]
+    #[doc = "@param propertyName A JSString containing the property\'s name."]
+    #[doc = "@param value A JSValue to use as the property\'s value."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@param attributes A logically ORed set of JSPropertyAttributes to give to the property."]
     #[link_name = "\u{1}_JSObjectSetProperty"]
     pub fn JSObjectSetProperty(
         ctx: JSContextRef,
@@ -802,6 +1319,13 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Deletes a property from an object."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject whose property you want to delete."]
+    #[doc = "@param propertyName A JSString containing the property\'s name."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result true if the delete operation succeeds, otherwise false (for example, if the property has the kJSPropertyAttributeDontDelete attribute set)."]
     #[link_name = "\u{1}_JSObjectDeleteProperty"]
     pub fn JSObjectDeleteProperty(
         ctx: JSContextRef,
@@ -811,6 +1335,14 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets a property from an object by numeric index."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject whose property you want to get."]
+    #[doc = "@param propertyIndex An integer value that is the property\'s name."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result The property\'s value if object has the property, otherwise the undefined value."]
+    #[doc = "@discussion Calling JSObjectGetPropertyAtIndex is equivalent to calling JSObjectGetProperty with a string containing propertyIndex, but JSObjectGetPropertyAtIndex provides optimized access to numeric properties."]
     #[link_name = "\u{1}_JSObjectGetPropertyAtIndex"]
     pub fn JSObjectGetPropertyAtIndex(
         ctx: JSContextRef,
@@ -820,6 +1352,14 @@ extern "C" {
     ) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Sets a property on an object by numeric index."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject whose property you want to set."]
+    #[doc = "@param propertyIndex The property\'s name as a number."]
+    #[doc = "@param value A JSValue to use as the property\'s value."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@discussion Calling JSObjectSetPropertyAtIndex is equivalent to calling JSObjectSetProperty with a string containing propertyIndex, but JSObjectSetPropertyAtIndex provides optimized access to numeric properties."]
     #[link_name = "\u{1}_JSObjectSetPropertyAtIndex"]
     pub fn JSObjectSetPropertyAtIndex(
         ctx: JSContextRef,
@@ -830,18 +1370,42 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets an object\'s private data."]
+    #[doc = "@param object A JSObject whose private data you want to get."]
+    #[doc = "@result A void* that is the object\'s private data, if the object has private data, otherwise NULL."]
     #[link_name = "\u{1}_JSObjectGetPrivate"]
     pub fn JSObjectGetPrivate(object: JSObjectRef) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Sets a pointer to private data on an object."]
+    #[doc = "@param object The JSObject whose private data you want to set."]
+    #[doc = "@param data A void* to set as the object\'s private data."]
+    #[doc = "@result true if object can store private data, otherwise false."]
+    #[doc = "@discussion The default object class does not allocate storage for private data. Only objects created with a non-NULL JSClass can store private data."]
     #[link_name = "\u{1}_JSObjectSetPrivate"]
     pub fn JSObjectSetPrivate(object: JSObjectRef, data: *mut ::std::os::raw::c_void) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether an object can be called as a function."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param object The JSObject to test."]
+    #[doc = "@result true if the object can be called as a function, otherwise false."]
     #[link_name = "\u{1}_JSObjectIsFunction"]
     pub fn JSObjectIsFunction(ctx: JSContextRef, object: JSObjectRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Calls an object as a function."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject to call as a function."]
+    #[doc = "@param thisObject The object to use as \"this,\" or NULL to use the global object as \"this.\""]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of arguments to pass to the function. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result The JSValue that results from calling object as a function, or NULL if an exception is thrown or object is not a function."]
     #[link_name = "\u{1}_JSObjectCallAsFunction"]
     pub fn JSObjectCallAsFunction(
         ctx: JSContextRef,
@@ -853,10 +1417,23 @@ extern "C" {
     ) -> JSValueRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Tests whether an object can be called as a constructor."]
+    #[doc = "@param ctx  The execution context to use."]
+    #[doc = "@param object The JSObject to test."]
+    #[doc = "@result true if the object can be called as a constructor, otherwise false."]
     #[link_name = "\u{1}_JSObjectIsConstructor"]
     pub fn JSObjectIsConstructor(ctx: JSContextRef, object: JSObjectRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Calls an object as a constructor."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The JSObject to call as a constructor."]
+    #[doc = "@param argumentCount An integer count of the number of arguments in arguments."]
+    #[doc = "@param arguments A JSValue array of arguments to pass to the constructor. Pass NULL if argumentCount is 0."]
+    #[doc = "@param exception A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result The JSObject that results from calling object as a constructor, or NULL if an exception is thrown or object is not a constructor."]
     #[link_name = "\u{1}_JSObjectCallAsConstructor"]
     pub fn JSObjectCallAsConstructor(
         ctx: JSContextRef,
@@ -867,6 +1444,11 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets the names of an object\'s enumerable properties."]
+    #[doc = "@param ctx The execution context to use."]
+    #[doc = "@param object The object whose property names you want to get."]
+    #[doc = "@result A JSPropertyNameArray containing the names object\'s enumerable properties. Ownership follows the Create Rule."]
     #[link_name = "\u{1}_JSObjectCopyPropertyNames"]
     pub fn JSObjectCopyPropertyNames(
         ctx: JSContextRef,
@@ -874,18 +1456,34 @@ extern "C" {
     ) -> JSPropertyNameArrayRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Retains a JavaScript property name array."]
+    #[doc = "@param array The JSPropertyNameArray to retain."]
+    #[doc = "@result A JSPropertyNameArray that is the same as array."]
     #[link_name = "\u{1}_JSPropertyNameArrayRetain"]
     pub fn JSPropertyNameArrayRetain(array: JSPropertyNameArrayRef) -> JSPropertyNameArrayRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Releases a JavaScript property name array."]
+    #[doc = "@param array The JSPropetyNameArray to release."]
     #[link_name = "\u{1}_JSPropertyNameArrayRelease"]
     pub fn JSPropertyNameArrayRelease(array: JSPropertyNameArrayRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets a count of the number of items in a JavaScript property name array."]
+    #[doc = "@param array The array from which to retrieve the count."]
+    #[doc = "@result An integer count of the number of names in array."]
     #[link_name = "\u{1}_JSPropertyNameArrayGetCount"]
     pub fn JSPropertyNameArrayGetCount(array: JSPropertyNameArrayRef) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets a property name at a given index in a JavaScript property name array."]
+    #[doc = "@param array The array from which to retrieve the property name."]
+    #[doc = "@param index The index of the property name to retrieve."]
+    #[doc = "@result A JSStringRef containing the property name."]
     #[link_name = "\u{1}_JSPropertyNameArrayGetNameAtIndex"]
     pub fn JSPropertyNameArrayGetNameAtIndex(
         array: JSPropertyNameArrayRef,
@@ -893,6 +1491,10 @@ extern "C" {
     ) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Adds a property name to a JavaScript property name accumulator."]
+    #[doc = "@param accumulator The accumulator object to which to add the property name."]
+    #[doc = "@param propertyName The property name to add."]
     #[link_name = "\u{1}_JSPropertyNameAccumulatorAddName"]
     pub fn JSPropertyNameAccumulatorAddName(
         accumulator: JSPropertyNameAccumulatorRef,
@@ -900,22 +1502,58 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a JavaScript context group."]
+    #[doc = "@discussion A JSContextGroup associates JavaScript contexts with one another."]
+    #[doc = "Contexts in the same group may share and exchange JavaScript objects. Sharing and/or exchanging"]
+    #[doc = "JavaScript objects between contexts in different groups will produce undefined behavior."]
+    #[doc = "When objects from the same context group are used in multiple threads, explicit"]
+    #[doc = "synchronization is required."]
+    #[doc = "@result The created JSContextGroup."]
     #[link_name = "\u{1}_JSContextGroupCreate"]
     pub fn JSContextGroupCreate() -> JSContextGroupRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Retains a JavaScript context group."]
+    #[doc = "@param group The JSContextGroup to retain."]
+    #[doc = "@result A JSContextGroup that is the same as group."]
     #[link_name = "\u{1}_JSContextGroupRetain"]
     pub fn JSContextGroupRetain(group: JSContextGroupRef) -> JSContextGroupRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Releases a JavaScript context group."]
+    #[doc = "@param group The JSContextGroup to release."]
     #[link_name = "\u{1}_JSContextGroupRelease"]
     pub fn JSContextGroupRelease(group: JSContextGroupRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a global JavaScript execution context."]
+    #[doc = "@discussion JSGlobalContextCreate allocates a global object and populates it with all the"]
+    #[doc = "built-in JavaScript objects, such as Object, Function, String, and Array."]
+    #[doc = ""]
+    #[doc = "In WebKit version 4.0 and later, the context is created in a unique context group."]
+    #[doc = "Therefore, scripts may execute in it concurrently with scripts executing in other contexts."]
+    #[doc = "However, you may not use values created in the context in other contexts."]
+    #[doc = "@param globalObjectClass The class to use when creating the global object. Pass"]
+    #[doc = "NULL to use the default object class."]
+    #[doc = "@result A JSGlobalContext with a global object of class globalObjectClass."]
     #[link_name = "\u{1}_JSGlobalContextCreate"]
     pub fn JSGlobalContextCreate(globalObjectClass: JSClassRef) -> JSGlobalContextRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Creates a global JavaScript execution context in the context group provided."]
+    #[doc = "@discussion JSGlobalContextCreateInGroup allocates a global object and populates it with"]
+    #[doc = "all the built-in JavaScript objects, such as Object, Function, String, and Array."]
+    #[doc = "@param globalObjectClass The class to use when creating the global object. Pass"]
+    #[doc = "NULL to use the default object class."]
+    #[doc = "@param group The context group to use. The created global context retains the group."]
+    #[doc = "Pass NULL to create a unique group for the context."]
+    #[doc = "@result A JSGlobalContext with a global object of class globalObjectClass and a context"]
+    #[doc = "group equal to group."]
     #[link_name = "\u{1}_JSGlobalContextCreateInGroup"]
     pub fn JSGlobalContextCreateInGroup(
         group: JSContextGroupRef,
@@ -923,63 +1561,141 @@ extern "C" {
     ) -> JSGlobalContextRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Retains a global JavaScript execution context."]
+    #[doc = "@param ctx The JSGlobalContext to retain."]
+    #[doc = "@result A JSGlobalContext that is the same as ctx."]
     #[link_name = "\u{1}_JSGlobalContextRetain"]
     pub fn JSGlobalContextRetain(ctx: JSGlobalContextRef) -> JSGlobalContextRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Releases a global JavaScript execution context."]
+    #[doc = "@param ctx The JSGlobalContext to release."]
     #[link_name = "\u{1}_JSGlobalContextRelease"]
     pub fn JSGlobalContextRelease(ctx: JSGlobalContextRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets the global object of a JavaScript execution context."]
+    #[doc = "@param ctx The JSContext whose global object you want to get."]
+    #[doc = "@result ctx\'s global object."]
     #[link_name = "\u{1}_JSContextGetGlobalObject"]
     pub fn JSContextGetGlobalObject(ctx: JSContextRef) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets the context group to which a JavaScript execution context belongs."]
+    #[doc = "@param ctx The JSContext whose group you want to get."]
+    #[doc = "@result ctx\'s group."]
     #[link_name = "\u{1}_JSContextGetGroup"]
     pub fn JSContextGetGroup(ctx: JSContextRef) -> JSContextGroupRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets the global context of a JavaScript execution context."]
+    #[doc = "@param ctx The JSContext whose global context you want to get."]
+    #[doc = "@result ctx\'s global context."]
     #[link_name = "\u{1}_JSContextGetGlobalContext"]
     pub fn JSContextGetGlobalContext(ctx: JSContextRef) -> JSGlobalContextRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Gets a copy of the name of a context."]
+    #[doc = "@param ctx The JSGlobalContext whose name you want to get."]
+    #[doc = "@result The name for ctx."]
+    #[doc = "@discussion A JSGlobalContext\'s name is exposed for remote debugging to make it"]
+    #[doc = "easier to identify the context you would like to attach to."]
     #[link_name = "\u{1}_JSGlobalContextCopyName"]
     pub fn JSGlobalContextCopyName(ctx: JSGlobalContextRef) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Sets the remote debugging name for a context."]
+    #[doc = "@param ctx The JSGlobalContext that you want to name."]
+    #[doc = "@param name The remote debugging name to set on ctx."]
     #[link_name = "\u{1}_JSGlobalContextSetName"]
     pub fn JSGlobalContextSetName(ctx: JSGlobalContextRef, name: JSStringRef);
 }
+#[doc = "@typedef JSChar"]
+#[doc = "@abstract A UTF-16 code unit. One, or a sequence of two, can encode any Unicode"]
+#[doc = "character. As with all scalar types, endianness depends on the underlying"]
+#[doc = "architecture."]
 pub type JSChar = ::std::os::raw::c_ushort;
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Creates a JavaScript string from a buffer of Unicode characters."]
+    #[doc = "@param chars      The buffer of Unicode characters to copy into the new JSString."]
+    #[doc = "@param numChars   The number of characters to copy from the buffer pointed to by chars."]
+    #[doc = "@result           A JSString containing chars. Ownership follows the Create Rule."]
     #[link_name = "\u{1}_JSStringCreateWithCharacters"]
     pub fn JSStringCreateWithCharacters(chars: *const JSChar, numChars: usize) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Creates a JavaScript string from a null-terminated UTF8 string."]
+    #[doc = "@param string     The null-terminated UTF8 string to copy into the new JSString."]
+    #[doc = "@result           A JSString containing string. Ownership follows the Create Rule."]
     #[link_name = "\u{1}_JSStringCreateWithUTF8CString"]
     pub fn JSStringCreateWithUTF8CString(string: *const ::std::os::raw::c_char) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Retains a JavaScript string."]
+    #[doc = "@param string     The JSString to retain."]
+    #[doc = "@result           A JSString that is the same as string."]
     #[link_name = "\u{1}_JSStringRetain"]
     pub fn JSStringRetain(string: JSStringRef) -> JSStringRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Releases a JavaScript string."]
+    #[doc = "@param string     The JSString to release."]
     #[link_name = "\u{1}_JSStringRelease"]
     pub fn JSStringRelease(string: JSStringRef);
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Returns the number of Unicode characters in a JavaScript string."]
+    #[doc = "@param string     The JSString whose length (in Unicode characters) you want to know."]
+    #[doc = "@result           The number of Unicode characters stored in string."]
     #[link_name = "\u{1}_JSStringGetLength"]
     pub fn JSStringGetLength(string: JSStringRef) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Returns a pointer to the Unicode character buffer that"]
+    #[doc = "serves as the backing store for a JavaScript string."]
+    #[doc = "@param string     The JSString whose backing store you want to access."]
+    #[doc = "@result           A pointer to the Unicode character buffer that serves as string\'s"]
+    #[doc = "backing store, which will be deallocated when string is deallocated."]
     #[link_name = "\u{1}_JSStringGetCharactersPtr"]
     pub fn JSStringGetCharactersPtr(string: JSStringRef) -> *const JSChar;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Returns the maximum number of bytes a JavaScript string will"]
+    #[doc = "take up if converted into a null-terminated UTF8 string."]
+    #[doc = "@param string The JSString whose maximum converted size (in bytes) you"]
+    #[doc = "want to know."]
+    #[doc = "@result The maximum number of bytes that could be required to convert string into a"]
+    #[doc = "null-terminated UTF8 string. The number of bytes that the conversion actually ends"]
+    #[doc = "up requiring could be less than this, but never more."]
     #[link_name = "\u{1}_JSStringGetMaximumUTF8CStringSize"]
     pub fn JSStringGetMaximumUTF8CStringSize(string: JSStringRef) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract Converts a JavaScript string into a null-terminated UTF8 string,"]
+    #[doc = "and copies the result into an external byte buffer."]
+    #[doc = "@param string The source JSString."]
+    #[doc = "@param buffer The destination byte buffer into which to copy a null-terminated"]
+    #[doc = "UTF8 representation of string. On return, buffer contains a UTF8 string"]
+    #[doc = "representation of string. If bufferSize is too small, buffer will contain only"]
+    #[doc = "partial results. If buffer is not at least bufferSize bytes in size,"]
+    #[doc = "behavior is undefined."]
+    #[doc = "@param bufferSize The size of the external buffer in bytes."]
+    #[doc = "@result The number of bytes written into buffer (including the null-terminator byte)."]
     #[link_name = "\u{1}_JSStringGetUTF8CString"]
     pub fn JSStringGetUTF8CString(
         string: JSStringRef,
@@ -988,14 +1704,31 @@ extern "C" {
     ) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract     Tests whether two JavaScript strings match."]
+    #[doc = "@param a      The first JSString to test."]
+    #[doc = "@param b      The second JSString to test."]
+    #[doc = "@result       true if the two strings match, otherwise false."]
     #[link_name = "\u{1}_JSStringIsEqual"]
     pub fn JSStringIsEqual(a: JSStringRef, b: JSStringRef) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract     Tests whether a JavaScript string matches a null-terminated UTF8 string."]
+    #[doc = "@param a      The JSString to test."]
+    #[doc = "@param b      The null-terminated UTF8 string to test."]
+    #[doc = "@result       true if the two strings match, otherwise false."]
     #[link_name = "\u{1}_JSStringIsEqualToUTF8CString"]
     pub fn JSStringIsEqualToUTF8CString(a: JSStringRef, b: *const ::std::os::raw::c_char) -> bool;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Creates a JavaScript Typed Array object with the given number of elements."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param arrayType    A value identifying the type of array to create. If arrayType is kJSTypedArrayTypeNone or kJSTypedArrayTypeArrayBuffer then NULL will be returned."]
+    #[doc = "@param length       The number of elements to be in the new Typed Array."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A JSObjectRef that is a Typed Array with all elements set to zero or NULL if there was an error."]
     #[link_name = "\u{1}_JSObjectMakeTypedArray"]
     pub fn JSObjectMakeTypedArray(
         ctx: JSContextRef,
@@ -1005,6 +1738,17 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract                 Creates a JavaScript Typed Array object from an existing pointer."]
+    #[doc = "@param ctx                The execution context to use."]
+    #[doc = "@param arrayType          A value identifying the type of array to create. If arrayType is kJSTypedArrayTypeNone or kJSTypedArrayTypeArrayBuffer then NULL will be returned."]
+    #[doc = "@param bytes              A pointer to the byte buffer to be used as the backing store of the Typed Array object."]
+    #[doc = "@param byteLength         The number of bytes pointed to by the parameter bytes."]
+    #[doc = "@param bytesDeallocator   The allocator to use to deallocate the external buffer when the JSTypedArrayData object is deallocated."]
+    #[doc = "@param deallocatorContext A pointer to pass back to the deallocator."]
+    #[doc = "@param exception          A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result                   A JSObjectRef Typed Array whose backing store is the same as the one pointed to by bytes or NULL if there was an error."]
+    #[doc = "@discussion               If an exception is thrown during this function the bytesDeallocator will always be called."]
     #[link_name = "\u{1}_JSObjectMakeTypedArrayWithBytesNoCopy"]
     pub fn JSObjectMakeTypedArrayWithBytesNoCopy(
         ctx: JSContextRef,
@@ -1017,6 +1761,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Creates a JavaScript Typed Array object from an existing JavaScript Array Buffer object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param arrayType    A value identifying the type of array to create. If arrayType is kJSTypedArrayTypeNone or kJSTypedArrayTypeArrayBuffer then NULL will be returned."]
+    #[doc = "@param buffer       An Array Buffer object that should be used as the backing store for the created JavaScript Typed Array object."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A JSObjectRef that is a Typed Array or NULL if there was an error. The backing store of the Typed Array will be buffer."]
     #[link_name = "\u{1}_JSObjectMakeTypedArrayWithArrayBuffer"]
     pub fn JSObjectMakeTypedArrayWithArrayBuffer(
         ctx: JSContextRef,
@@ -1026,6 +1777,15 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Creates a JavaScript Typed Array object from an existing JavaScript Array Buffer object with the given offset and length."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param arrayType    A value identifying the type of array to create. If arrayType is kJSTypedArrayTypeNone or kJSTypedArrayTypeArrayBuffer then NULL will be returned."]
+    #[doc = "@param buffer       An Array Buffer object that should be used as the backing store for the created JavaScript Typed Array object."]
+    #[doc = "@param byteOffset   The byte offset for the created Typed Array. byteOffset should aligned with the element size of arrayType."]
+    #[doc = "@param length       The number of elements to include in the Typed Array."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A JSObjectRef that is a Typed Array or NULL if there was an error. The backing store of the Typed Array will be buffer."]
     #[link_name = "\u{1}_JSObjectMakeTypedArrayWithArrayBufferAndOffset"]
     pub fn JSObjectMakeTypedArrayWithArrayBufferAndOffset(
         ctx: JSContextRef,
@@ -1037,6 +1797,13 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns a temporary pointer to the backing store of a JavaScript Typed Array object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param object       The Typed Array object whose backing store pointer to return."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A pointer to the raw data buffer that serves as object\'s backing store or NULL if object is not a Typed Array object."]
+    #[doc = "@discussion         The pointer returned by this function is temporary and is not guaranteed to remain valid across JavaScriptCore API calls."]
     #[link_name = "\u{1}_JSObjectGetTypedArrayBytesPtr"]
     pub fn JSObjectGetTypedArrayBytesPtr(
         ctx: JSContextRef,
@@ -1045,6 +1812,12 @@ extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns the length of a JavaScript Typed Array object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param object       The Typed Array object whose length to return."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             The length of the Typed Array object or 0 if the object is not a Typed Array object."]
     #[link_name = "\u{1}_JSObjectGetTypedArrayLength"]
     pub fn JSObjectGetTypedArrayLength(
         ctx: JSContextRef,
@@ -1053,6 +1826,12 @@ extern "C" {
     ) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns the byte length of a JavaScript Typed Array object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param object       The Typed Array object whose byte length to return."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             The byte length of the Typed Array object or 0 if the object is not a Typed Array object."]
     #[link_name = "\u{1}_JSObjectGetTypedArrayByteLength"]
     pub fn JSObjectGetTypedArrayByteLength(
         ctx: JSContextRef,
@@ -1061,6 +1840,12 @@ extern "C" {
     ) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns the byte offset of a JavaScript Typed Array object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param object       The Typed Array object whose byte offset to return."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             The byte offset of the Typed Array object or 0 if the object is not a Typed Array object."]
     #[link_name = "\u{1}_JSObjectGetTypedArrayByteOffset"]
     pub fn JSObjectGetTypedArrayByteOffset(
         ctx: JSContextRef,
@@ -1069,6 +1854,12 @@ extern "C" {
     ) -> usize;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract           Returns the JavaScript Array Buffer object that is used as the backing of a JavaScript Typed Array object."]
+    #[doc = "@param ctx          The execution context to use."]
+    #[doc = "@param object       The JSObjectRef whose Typed Array type data pointer to obtain."]
+    #[doc = "@param exception    A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result             A JSObjectRef with a JSTypedArrayType of kJSTypedArrayTypeArrayBuffer or NULL if object is not a Typed Array."]
     #[link_name = "\u{1}_JSObjectGetTypedArrayBuffer"]
     pub fn JSObjectGetTypedArrayBuffer(
         ctx: JSContextRef,
@@ -1077,6 +1868,16 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract                 Creates a JavaScript Array Buffer object from an existing pointer."]
+    #[doc = "@param ctx                The execution context to use."]
+    #[doc = "@param bytes              A pointer to the byte buffer to be used as the backing store of the Typed Array object."]
+    #[doc = "@param byteLength         The number of bytes pointed to by the parameter bytes."]
+    #[doc = "@param bytesDeallocator   The allocator to use to deallocate the external buffer when the Typed Array data object is deallocated."]
+    #[doc = "@param deallocatorContext A pointer to pass back to the deallocator."]
+    #[doc = "@param exception          A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result                   A JSObjectRef Array Buffer whose backing store is the same as the one pointed to by bytes or NULL if there was an error."]
+    #[doc = "@discussion               If an exception is thrown during this function the bytesDeallocator will always be called."]
     #[link_name = "\u{1}_JSObjectMakeArrayBufferWithBytesNoCopy"]
     pub fn JSObjectMakeArrayBufferWithBytesNoCopy(
         ctx: JSContextRef,
@@ -1088,6 +1889,12 @@ extern "C" {
     ) -> JSObjectRef;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Returns a pointer to the data buffer that serves as the backing store for a JavaScript Typed Array object."]
+    #[doc = "@param object     The Array Buffer object whose internal backing store pointer to return."]
+    #[doc = "@param exception  A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result           A pointer to the raw data buffer that serves as object\'s backing store or NULL if object is not an Array Buffer object."]
+    #[doc = "@discussion       The pointer returned by this function is temporary and is not guaranteed to remain valid across JavaScriptCore API calls."]
     #[link_name = "\u{1}_JSObjectGetArrayBufferBytesPtr"]
     pub fn JSObjectGetArrayBufferBytesPtr(
         ctx: JSContextRef,
@@ -1096,6 +1903,12 @@ extern "C" {
     ) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
+    #[doc = "@function"]
+    #[doc = "@abstract         Returns the number of bytes in a JavaScript data object."]
+    #[doc = "@param ctx        The execution context to use."]
+    #[doc = "@param object     The JS Arary Buffer object whose length in bytes to return."]
+    #[doc = "@param exception  A pointer to a JSValueRef in which to store an exception, if any. Pass NULL if you do not care to store an exception."]
+    #[doc = "@result           The number of bytes stored in the data object."]
     #[link_name = "\u{1}_JSObjectGetArrayBufferByteLength"]
     pub fn JSObjectGetArrayBufferByteLength(
         ctx: JSContextRef,
@@ -1248,70 +2061,125 @@ pub const ULScrollEventType_kScrollEventType_ScrollByPixel: ULScrollEventType = 
 pub const ULScrollEventType_kScrollEventType_ScrollByPage: ULScrollEventType = 1;
 pub type ULScrollEventType = u32;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create config with default values (see <Ultralight/platform/Config.h>)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateConfig"]
     pub fn ulCreateConfig() -> ULConfig;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy config."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyConfig"]
     pub fn ulDestroyConfig(config: ULConfig);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set whether images should be enabled (Default = True)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetEnableImages"]
     pub fn ulConfigSetEnableImages(config: ULConfig, enabled: bool);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set whether JavaScript should be eanbled (Default = True)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetEnableJavaScript"]
     pub fn ulConfigSetEnableJavaScript(config: ULConfig, enabled: bool);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set whether we should use BGRA byte order (instead of RGBA) for View"]
+    #[doc = " bitmaps. (Default = False)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetUseBGRAForOffscreenRendering"]
     pub fn ulConfigSetUseBGRAForOffscreenRendering(config: ULConfig, enabled: bool);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set the amount that the application DPI has been scaled, used for"]
+    #[doc = " scaling device coordinates to pixels and oversampling raster shapes."]
+    #[doc = " (Default = 1.0)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetDeviceScaleHint"]
     pub fn ulConfigSetDeviceScaleHint(config: ULConfig, value: f64);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set default font-family to use (Default = Times New Roman)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetFontFamilyStandard"]
     pub fn ulConfigSetFontFamilyStandard(config: ULConfig, font_name: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set default font-family to use for fixed fonts, eg <pre> and <code>."]
+    #[doc = " (Default = Courier New)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetFontFamilyFixed"]
     pub fn ulConfigSetFontFamilyFixed(config: ULConfig, font_name: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set default font-family to use for serif fonts. (Default = Times New Roman)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetFontFamilySerif"]
     pub fn ulConfigSetFontFamilySerif(config: ULConfig, font_name: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set default font-family to use for sans-serif fonts. (Default = Arial)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetFontFamilySansSerif"]
     pub fn ulConfigSetFontFamilySansSerif(config: ULConfig, font_name: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set user agent string. (See <Ultralight/platform/Config.h> for the default)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetUserAgent"]
     pub fn ulConfigSetUserAgent(config: ULConfig, agent_string: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set user stylesheet (CSS). (Default = Empty)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulConfigSetUserStylesheet"]
     pub fn ulConfigSetUserStylesheet(config: ULConfig, css_string: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create renderer (create this only once per application lifetime)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateRenderer"]
     pub fn ulCreateRenderer(config: ULConfig) -> ULRenderer;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy renderer."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyRenderer"]
     pub fn ulDestroyRenderer(renderer: ULRenderer);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Update timers and dispatch internal callbacks (JavaScript and network)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulUpdate"]
     pub fn ulUpdate(renderer: ULRenderer);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Render all active Views to their respective bitmaps."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulRender"]
     pub fn ulRender(renderer: ULRenderer);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a View with certain size (in device coordinates)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateView"]
     pub fn ulCreateView(
         renderer: ULRenderer,
@@ -1321,38 +2189,71 @@ extern "C" {
     ) -> ULView;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyView"]
     pub fn ulDestroyView(view: ULView);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get current URL."]
+    #[doc = ""]
+    #[doc = " @note Don\'t destroy the returned string, it is owned by the View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGetURL"]
     pub fn ulViewGetURL(view: ULView) -> ULString;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get current title."]
+    #[doc = ""]
+    #[doc = " @note Don\'t destroy the returned string, it is owned by the View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGetTitle"]
     pub fn ulViewGetTitle(view: ULView) -> ULString;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Check if main frame is loading."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewIsLoading"]
     pub fn ulViewIsLoading(view: ULView) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Check if bitmap is dirty (has changed since last call to ulViewGetBitmap)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewIsBitmapDirty"]
     pub fn ulViewIsBitmapDirty(view: ULView) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get bitmap (will reset the dirty flag)."]
+    #[doc = ""]
+    #[doc = " @note Don\'t destroy the returned bitmap, it is owned by the View."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGetBitmap"]
     pub fn ulViewGetBitmap(view: ULView) -> ULBitmap;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Load a raw string of html"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewLoadHTML"]
     pub fn ulViewLoadHTML(view: ULView, html_string: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Load a URL into main frame"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewLoadURL"]
     pub fn ulViewLoadURL(view: ULView, url_string: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Resize view to a certain width and height (in device coordinates)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewResize"]
     pub fn ulViewResize(
         view: ULView,
@@ -1361,50 +2262,86 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the page\'s JSContext for use with JavaScriptCore API"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGetJSContext"]
     pub fn ulViewGetJSContext(view: ULView) -> JSContextRef;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Evaluate a raw string of JavaScript and return result"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewEvaluateScript"]
     pub fn ulViewEvaluateScript(view: ULView, js_string: ULString) -> JSValueRef;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Check if can navigate backwards in history"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewCanGoBack"]
     pub fn ulViewCanGoBack(view: ULView) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Check if can navigate forwards in history"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewCanGoForward"]
     pub fn ulViewCanGoForward(view: ULView) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Navigate backwards in history"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGoBack"]
     pub fn ulViewGoBack(view: ULView);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Navigate forwards in history"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGoForward"]
     pub fn ulViewGoForward(view: ULView);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Navigate to arbitrary offset in history"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGoToHistoryOffset"]
     pub fn ulViewGoToHistoryOffset(view: ULView, offset: ::std::os::raw::c_int);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Reload current page"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewReload"]
     pub fn ulViewReload(view: ULView);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Stop all page loads"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewStop"]
     pub fn ulViewStop(view: ULView);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Fire a keyboard event"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewFireKeyEvent"]
     pub fn ulViewFireKeyEvent(view: ULView, key_event: ULKeyEvent);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Fire a mouse event"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewFireMouseEvent"]
     pub fn ulViewFireMouseEvent(view: ULView, mouse_event: ULMouseEvent);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Fire a scroll event"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewFireScrollEvent"]
     pub fn ulViewFireScrollEvent(view: ULView, scroll_event: ULScrollEvent);
 }
@@ -1412,6 +2349,9 @@ pub type ULChangeTitleCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView, title: ULString),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the page title changes"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetChangeTitleCallback"]
     pub fn ulViewSetChangeTitleCallback(
         view: ULView,
@@ -1423,6 +2363,9 @@ pub type ULChangeURLCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView, url: ULString),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the page URL changes"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetChangeURLCallback"]
     pub fn ulViewSetChangeURLCallback(
         view: ULView,
@@ -1434,6 +2377,9 @@ pub type ULChangeTooltipCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView, tooltip: ULString),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the tooltip changes (usually result of a mouse hover)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetChangeTooltipCallback"]
     pub fn ulViewSetChangeTooltipCallback(
         view: ULView,
@@ -1445,6 +2391,9 @@ pub type ULChangeCursorCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView, cursor: ULCursor),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the mouse cursor changes"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetChangeCursorCallback"]
     pub fn ulViewSetChangeCursorCallback(
         view: ULView,
@@ -1465,6 +2414,10 @@ pub type ULAddConsoleMessageCallback = ::std::option::Option<
     ),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when a message is added to the console (useful for"]
+    #[doc = " JavaScript / network errors and debugging)"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetAddConsoleMessageCallback"]
     pub fn ulViewSetAddConsoleMessageCallback(
         view: ULView,
@@ -1476,6 +2429,9 @@ pub type ULBeginLoadingCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the page begins loading new URL into main frame"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetBeginLoadingCallback"]
     pub fn ulViewSetBeginLoadingCallback(
         view: ULView,
@@ -1487,6 +2443,9 @@ pub type ULFinishLoadingCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the page finishes loading URL into main frame"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetFinishLoadingCallback"]
     pub fn ulViewSetFinishLoadingCallback(
         view: ULView,
@@ -1498,6 +2457,9 @@ pub type ULUpdateHistoryCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when the history (back/forward state) is modified"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetUpdateHistoryCallback"]
     pub fn ulViewSetUpdateHistoryCallback(
         view: ULView,
@@ -1509,6 +2471,10 @@ pub type ULDOMReadyCallback = ::std::option::Option<
     unsafe extern "C" fn(user_data: *mut ::std::os::raw::c_void, caller: ULView),
 >;
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set callback for when all JavaScript has been parsed and the document is"]
+    #[doc = " ready. This is the best time to make initial JavaScript calls to your page."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetDOMReadyCallback"]
     pub fn ulViewSetDOMReadyCallback(
         view: ULView,
@@ -1517,46 +2483,83 @@ extern "C" {
     );
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Set whether or not a view should be repainted during the next call to"]
+    #[doc = " ulRender."]
+    #[doc = ""]
+    #[doc = " @note  This flag is automatically set whenever the page content changes"]
+    #[doc = "        but you can set it directly in case you need to force a repaint."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewSetNeedsPaint"]
     pub fn ulViewSetNeedsPaint(view: ULView, needs_paint: bool);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not a view should be painted during the next call to ulRender."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulViewGetNeedsPaint"]
     pub fn ulViewGetNeedsPaint(view: ULView) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create string from null-terminated ASCII C-string"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateString"]
     pub fn ulCreateString(str: *const ::std::os::raw::c_char) -> ULString;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create string from UTF-8 buffer"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateStringUTF8"]
     pub fn ulCreateStringUTF8(str: *const ::std::os::raw::c_char, len: usize) -> ULString;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create string from UTF-16 buffer"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateStringUTF16"]
     pub fn ulCreateStringUTF16(str: *mut ULChar16, len: usize) -> ULString;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy string (you should destroy any strings you explicitly Create)."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyString"]
     pub fn ulDestroyString(str: ULString);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get internal UTF-16 buffer data."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulStringGetData"]
     pub fn ulStringGetData(str: ULString) -> *mut ULChar16;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get length in UTF-16 characters"]
+    #[doc = ""]
     #[link_name = "\u{1}_ulStringGetLength"]
     pub fn ulStringGetLength(str: ULString) -> usize;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Whether this string is empty or not."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulStringIsEmpty"]
     pub fn ulStringIsEmpty(str: ULString) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create empty bitmap."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateEmptyBitmap"]
     pub fn ulCreateEmptyBitmap() -> ULBitmap;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create bitmap with certain dimensions and pixel format."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateBitmap"]
     pub fn ulCreateBitmap(
         width: ::std::os::raw::c_uint,
@@ -1565,6 +2568,10 @@ extern "C" {
     ) -> ULBitmap;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create bitmap from existing pixel buffer. @see Bitmap for help using"]
+    #[doc = " this function."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateBitmapFromPixels"]
     pub fn ulCreateBitmapFromPixels(
         width: ::std::os::raw::c_uint,
@@ -1577,66 +2584,116 @@ extern "C" {
     ) -> ULBitmap;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create bitmap from copy."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateBitmapFromCopy"]
     pub fn ulCreateBitmapFromCopy(existing_bitmap: ULBitmap) -> ULBitmap;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a bitmap (you should only destroy Bitmaps you have explicitly"]
+    #[doc = " created via one of the creation functions above."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyBitmap"]
     pub fn ulDestroyBitmap(bitmap: ULBitmap);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the width in pixels."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetWidth"]
     pub fn ulBitmapGetWidth(bitmap: ULBitmap) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the height in pixels."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetHeight"]
     pub fn ulBitmapGetHeight(bitmap: ULBitmap) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the pixel format."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetFormat"]
     pub fn ulBitmapGetFormat(bitmap: ULBitmap) -> ULBitmapFormat;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the bytes per pixel."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetBpp"]
     pub fn ulBitmapGetBpp(bitmap: ULBitmap) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the number of bytes per row."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetRowBytes"]
     pub fn ulBitmapGetRowBytes(bitmap: ULBitmap) -> ::std::os::raw::c_uint;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get the size in bytes of the underlying pixel buffer."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapGetSize"]
     pub fn ulBitmapGetSize(bitmap: ULBitmap) -> usize;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not this bitmap owns its own pixel buffer."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapOwnsPixels"]
     pub fn ulBitmapOwnsPixels(bitmap: ULBitmap) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Lock pixels for reading/writing, returns pointer to pixel buffer."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapLockPixels"]
     pub fn ulBitmapLockPixels(bitmap: ULBitmap) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Unlock pixels after locking."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapUnlockPixels"]
     pub fn ulBitmapUnlockPixels(bitmap: ULBitmap);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Get raw pixel buffer-- you should only call this if Bitmap is already"]
+    #[doc = " locked."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapRawPixels"]
     pub fn ulBitmapRawPixels(bitmap: ULBitmap) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Whether or not this bitmap is empty."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapIsEmpty"]
     pub fn ulBitmapIsEmpty(bitmap: ULBitmap) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Reset bitmap pixels to 0."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapErase"]
     pub fn ulBitmapErase(bitmap: ULBitmap);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Write bitmap to a PNG on disk."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulBitmapWritePNG"]
     pub fn ulBitmapWritePNG(bitmap: ULBitmap, path: *const ::std::os::raw::c_char) -> bool;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a key event, @see KeyEvent for help with the following parameters."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateKeyEvent"]
     pub fn ulCreateKeyEvent(
         type_: ULKeyEventType,
@@ -1651,10 +2708,16 @@ extern "C" {
     ) -> ULKeyEvent;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a key event."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyKeyEvent"]
     pub fn ulDestroyKeyEvent(evt: ULKeyEvent);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a mouse event, @see MouseEvent for help using this function."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateMouseEvent"]
     pub fn ulCreateMouseEvent(
         type_: ULMouseEventType,
@@ -1664,10 +2727,16 @@ extern "C" {
     ) -> ULMouseEvent;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a mouse event."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyMouseEvent"]
     pub fn ulDestroyMouseEvent(evt: ULMouseEvent);
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Create a scroll event, @see ScrollEvent for help using this function."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulCreateScrollEvent"]
     pub fn ulCreateScrollEvent(
         type_: ULScrollEventType,
@@ -1676,6 +2745,9 @@ extern "C" {
     ) -> ULScrollEvent;
 }
 extern "C" {
+    #[doc = ""]
+    #[doc = " Destroy a scroll event."]
+    #[doc = ""]
     #[link_name = "\u{1}_ulDestroyScrollEvent"]
     pub fn ulDestroyScrollEvent(evt: ULScrollEvent);
 }
@@ -1703,6 +2775,14 @@ pub struct C_Overlay {
     _unused: [u8; 0],
 }
 pub type ULOverlay = *mut C_Overlay;
+pub const ULWindowFlags_kWindowFlags_Borderless: ULWindowFlags = 1;
+pub const ULWindowFlags_kWindowFlags_Titled: ULWindowFlags = 2;
+pub const ULWindowFlags_kWindowFlags_Resizable: ULWindowFlags = 4;
+pub const ULWindowFlags_kWindowFlags_Maximizable: ULWindowFlags = 8;
+#[doc = ""]
+#[doc = " Window creation flags. @see Window::Create"]
+#[doc = ""]
+pub type ULWindowFlags = u32;
 extern "C" {
     #[doc = ""]
     #[doc = " Create the App singleton."]
@@ -1811,14 +2891,14 @@ extern "C" {
     #[doc = " Get the width of the monitor (in device coordinates)"]
     #[doc = ""]
     #[link_name = "\u{1}_ulMonitorGetWidth"]
-    pub fn ulMonitorGetWidth(monitor: ULMonitor) -> ::std::os::raw::c_int;
+    pub fn ulMonitorGetWidth(monitor: ULMonitor) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
     #[doc = " Get the height of the monitor (in device coordinates)"]
     #[doc = ""]
     #[link_name = "\u{1}_ulMonitorGetHeight"]
-    pub fn ulMonitorGetHeight(monitor: ULMonitor) -> ::std::os::raw::c_int;
+    pub fn ulMonitorGetHeight(monitor: ULMonitor) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
@@ -1866,8 +2946,8 @@ extern "C" {
 pub type ULResizeCallback = ::std::option::Option<
     unsafe extern "C" fn(
         user_data: *mut ::std::os::raw::c_void,
-        width: ::std::os::raw::c_int,
-        height: ::std::os::raw::c_int,
+        width: ::std::os::raw::c_uint,
+        height: ::std::os::raw::c_uint,
     ),
 >;
 extern "C" {
@@ -1887,14 +2967,14 @@ extern "C" {
     #[doc = " Get window width (in device coordinates)."]
     #[doc = ""]
     #[link_name = "\u{1}_ulWindowGetWidth"]
-    pub fn ulWindowGetWidth(window: ULWindow) -> ::std::os::raw::c_int;
+    pub fn ulWindowGetWidth(window: ULWindow) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
     #[doc = " Get window height (in device coordinates)."]
     #[doc = ""]
     #[link_name = "\u{1}_ulWindowGetHeight"]
-    pub fn ulWindowGetHeight(window: ULWindow) -> ::std::os::raw::c_int;
+    pub fn ulWindowGetHeight(window: ULWindow) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
@@ -1974,8 +3054,8 @@ extern "C" {
     #[link_name = "\u{1}_ulCreateOverlay"]
     pub fn ulCreateOverlay(
         window: ULWindow,
-        width: ::std::os::raw::c_int,
-        height: ::std::os::raw::c_int,
+        width: ::std::os::raw::c_uint,
+        height: ::std::os::raw::c_uint,
         x: ::std::os::raw::c_int,
         y: ::std::os::raw::c_int,
     ) -> ULOverlay;
@@ -1999,14 +3079,14 @@ extern "C" {
     #[doc = " Get the width (in device coordinates)."]
     #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetWidth"]
-    pub fn ulOverlayGetWidth(overlay: ULOverlay) -> ::std::os::raw::c_int;
+    pub fn ulOverlayGetWidth(overlay: ULOverlay) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
     #[doc = " Get the height (in device coordinates)."]
     #[doc = ""]
     #[link_name = "\u{1}_ulOverlayGetHeight"]
-    pub fn ulOverlayGetHeight(overlay: ULOverlay) -> ::std::os::raw::c_int;
+    pub fn ulOverlayGetHeight(overlay: ULOverlay) -> ::std::os::raw::c_uint;
 }
 extern "C" {
     #[doc = ""]
@@ -2039,8 +3119,8 @@ extern "C" {
     #[link_name = "\u{1}_ulOverlayResize"]
     pub fn ulOverlayResize(
         overlay: ULOverlay,
-        width: ::std::os::raw::c_int,
-        height: ::std::os::raw::c_int,
+        width: ::std::os::raw::c_uint,
+        height: ::std::os::raw::c_uint,
     );
 }
 extern "C" {
