@@ -1,8 +1,3 @@
-extern crate bindgen;
-
-use std::env;
-use std::path::PathBuf;
-
 fn main() {
     println!("cargo:rustc-flags=-L /usr/local/lib/");
     println!("cargo:rustc-link-search=/usr/local/lib/");
