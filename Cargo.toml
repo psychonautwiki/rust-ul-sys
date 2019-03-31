@@ -1,12 +1,12 @@
 [package]
-name = "ul-sys"
-version = "1.0.0"
 authors = ["Kenan Sulayman <kenan@sly.mn>"]
 description = "Bindings to Ultralight Framework (Ultralight, AppCore)"
-license = "MIT"
-readme = "readme.md"
-
-repository = "https://github.com/psychonautwiki/rust-ul-sys"
 documentation = "https://docs.rs/ul-sys/latest/ul_sys/"
+license = "MIT"
+name = "ul-sys"
+readme = "readme.md"
+repository = "https://github.com/psychonautwiki/rust-ul-sys"
+version = "1.0.1"
 
-[dependencies]
+[build-dependencies]
+bindgen = "0.49.0"
