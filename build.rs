@@ -7,9 +7,15 @@ fn main() {
     println!("cargo:rustc-flags=-L /usr/local/lib/");
     println!("cargo:rustc-link-search=/usr/local/lib/");
 
-    println!("cargo:rustc-link-lib=Ultralight");
-    println!("cargo:rustc-link-lib=WebCore");
-    println!("cargo:rustc-link-lib=AppCore");
+    if cfg!(target_os = "macos") {
+        println!("cargo:rustc-link-lib=dylib=Ultralight");
+        println!("cargo:rustc-link-lib=dylib=WebCore");
+        println!("cargo:rustc-link-lib=dylib=AppCore");
+    } else {
+        println!("cargo:rustc-link-lib=Ultralight");
+        println!("cargo:rustc-link-lib=WebCore");
+        println!("cargo:rustc-link-lib=AppCore");
+    }
 
     let bindings = bindgen::Builder::default()
         .header("wrapper/wrapper.h")
