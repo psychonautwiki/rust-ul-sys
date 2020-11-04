@@ -251,7 +251,7 @@ dependencies = [
 
 [[package]]
 name = "ul-sys"
-version = "1.2.0"
+version = "1.2.1-alpha.0"
 dependencies = [
  "bindgen 0.51.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
