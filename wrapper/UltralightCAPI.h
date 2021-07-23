@@ -50,6 +50,7 @@ extern "C" {
 typedef struct C_Config* ULConfig;
 typedef struct C_Renderer* ULRenderer;
 typedef struct C_Session* ULSession;
+typedef struct C_ViewConfig* ULViewConfig;
 typedef struct C_View* ULView;
 typedef struct C_Bitmap* ULBitmap;
 typedef struct C_String* ULString;
@@ -141,7 +142,7 @@ typedef enum {
 
   ///
   /// Blue Green Red Alpha channels, 32-bits per pixel.
-  /// 
+  ///
   /// Encoding: 8-bits per channel, unsigned normalized.
   ///
   /// Color-space: sRGB gamma with premultiplied linear alpha channel.
@@ -297,34 +298,10 @@ ULExport ULConfig ulCreateConfig();
 ULExport void ulDestroyConfig(ULConfig config);
 
 ///
-/// Set the file path to the directory that contains Ultralight's bundled
-/// resources (eg, cacert.pem and other localized resources). 
-///
-ULExport void ulConfigSetResourcePath(ULConfig config, ULString resource_path);
-
-///
 /// Set the file path to a writable directory that will be used to store
 /// cookies, cached resources, and other persistent data.
 ///
 ULExport void ulConfigSetCachePath(ULConfig config, ULString cache_path);
-
-///
-/// When enabled, each View will be rendered to an offscreen GPU texture
-/// using the GPU driver set in ulPlatformSetGPUDriver. You can fetch
-/// details for the texture via ulViewGetRenderTarget.
-///
-/// When disabled (the default), each View will be rendered to an offscreen
-/// pixel buffer. This pixel buffer can optionally be provided by the user--
-/// for more info see ulViewGetSurface.
-///
-ULExport void ulConfigSetUseGPURenderer(ULConfig config, bool use_gpu);
-
-///
-/// Set the amount that the application DPI has been scaled, used for
-/// scaling device coordinates to pixels and oversampling raster shapes
-/// (Default = 1.0).
-///
-ULExport void ulConfigSetDeviceScale(ULConfig config, double value);
 
 ///
 /// The winding order for front-facing triangles. @see FaceWinding
@@ -332,16 +309,6 @@ ULExport void ulConfigSetDeviceScale(ULConfig config, double value);
 /// Note: This is only used with custom GPUDrivers
 ///
 ULExport void ulConfigSetFaceWinding(ULConfig config, ULFaceWinding winding);
-
-///
-/// Set whether images should be enabled (Default = True).
-///
-ULExport void ulConfigSetEnableImages(ULConfig config, bool enabled);
-
-///
-/// Set whether JavaScript should be eanbled (Default = True).
-///
-ULExport void ulConfigSetEnableJavaScript(ULConfig config, bool enabled);
 
 ///
 /// The hinting algorithm to use when rendering fonts. (Default = kFontHinting_Normal)
@@ -355,34 +322,6 @@ ULExport void ulConfigSetFontHinting(ULConfig config, ULFontHinting font_hinting
 /// (Default = 1.8)
 ///
 ULExport void ulConfigSetFontGamma(ULConfig config, double font_gamma);
-
-///
-/// Set default font-family to use (Default = Times New Roman).
-///
-ULExport void ulConfigSetFontFamilyStandard(ULConfig config,
-                                            ULString font_name);
-
-///
-/// Set default font-family to use for fixed fonts, eg <pre> and <code>
-/// (Default = Courier New).
-///
-ULExport void ulConfigSetFontFamilyFixed(ULConfig config, ULString font_name);
-
-///
-/// Set default font-family to use for serif fonts (Default = Times New Roman).
-///
-ULExport void ulConfigSetFontFamilySerif(ULConfig config, ULString font_name);
-
-///
-/// Set default font-family to use for sans-serif fonts (Default = Arial).
-///
-ULExport void ulConfigSetFontFamilySansSerif(ULConfig config,
-                                             ULString font_name);
-
-///
-/// Set user agent string (See <Ultralight/platform/Config.h> for the default).
-///
-ULExport void ulConfigSetUserAgent(ULConfig config, ULString agent_string);
 
 ///
 /// Set user stylesheet (CSS) (Default = Empty).
@@ -466,7 +405,7 @@ ULExport void ulConfigSetMinSmallHeapSize(ULConfig config, unsigned int size);
 /// You shoud set up your platform handlers (eg, ulPlatformSetLogger,
 /// ulPlatformSetFileSystem, etc.) before calling this.
 ///
-/// You will also need to define a font loader before calling this-- 
+/// You will also need to define a font loader before calling this--
 /// as of this writing (v1.2) the only way to do this in C API is by calling
 /// ulEnablePlatformFontLoader() (available in <AppCore/CAPI.h>).
 ///
@@ -547,6 +486,81 @@ ULExport unsigned long long ulSessionGetId(ULSession session);
 ULExport ULString ulSessionGetDiskPath(ULSession session);
 
 /******************************************************************************
+ * ViewConfig
+ *****************************************************************************/
+
+///
+/// Create view configuration with default values (see <Ultralight/platform/View.h>).
+///
+ULExport ULViewConfig ulCreateViewConfig();
+
+///
+/// Destroy view configuration.
+///
+ULExport void ulDestroyViewConfig(ULViewConfig config);
+
+///
+/// When enabled, the View will be rendered to an offscreen GPU texture
+/// using the GPU driver set in ulPlatformSetGPUDriver. You can fetch
+/// details for the texture via ulViewGetRenderTarget.
+///
+/// When disabled (the default), the View will be rendered to an offscreen
+/// pixel buffer surface. This pixel buffer can optionally be provided by the user--
+/// for more info see ulViewGetSurface.
+///
+ULExport void ulViewConfigSetIsAccelerated(ULViewConfig config, bool is_accelerated);
+
+///
+/// Set whether images should be enabled (Default = True).
+///
+ULExport void ulViewConfigSetIsTransparent(ULViewConfig config, bool is_transparent);
+
+///
+/// Set the amount that the application DPI has been scaled, used for
+/// scaling device coordinates to pixels and oversampling raster shapes
+/// (Default = 1.0).
+///
+ULExport void ulViewConfigSetInitialDeviceScale(ULViewConfig config, double initial_device_scale);
+
+ULExport void ulViewConfigSetInitialFocus(ULViewConfig config, bool is_focused);
+
+///
+/// Set whether images should be enabled (Default = True).
+///
+ULExport void ulViewConfigSetEnableImages(ULViewConfig config, bool enabled);
+
+///
+/// Set whether JavaScript should be eanbled (Default = True).
+///
+ULExport void ulViewConfigSetEnableJavaScript(ULViewConfig config, bool enabled);
+
+///
+/// Set default font-family to use (Default = Times New Roman).
+///
+ULExport void ulViewConfigSetFontFamilyStandard(ULViewConfig config, ULString font_name);
+
+///
+/// Set default font-family to use for fixed fonts, eg <pre> and <code>
+/// (Default = Courier New).
+///
+ULExport void ulViewConfigSetFontFamilyFixed(ULViewConfig config, ULString font_name);
+
+///
+/// Set default font-family to use for serif fonts (Default = Times New Roman).
+///
+ULExport void ulViewConfigSetFontFamilySerif(ULViewConfig config, ULString font_name);
+
+///
+/// Set default font-family to use for sans-serif fonts (Default = Arial).
+///
+ULExport void ulViewConfigSetFontFamilySansSerif(ULViewConfig config, ULString font_name);
+
+///
+/// Set user agent string (See <Ultralight/platform/Config.h> for the default).
+///
+ULExport void ulViewConfigSetUserAgent(ULViewConfig config, ULString agent_string);
+
+/******************************************************************************
  * View
  *****************************************************************************/
 
@@ -555,9 +569,8 @@ ULExport ULString ulSessionGetDiskPath(ULSession session);
 ///
 /// @note  You can pass null to 'session' to use the default session.
 ///
-ULExport ULView ulCreateView(ULRenderer renderer, unsigned int width,
-                             unsigned int height, bool transparent,
-                             ULSession session, bool force_cpu_renderer);
+ULExport ULView ulCreateView(ULRenderer renderer, unsigned int width, unsigned int height,
+                             ULViewConfig view_config, ULSession session);
 
 ///
 /// Destroy a View.
@@ -634,7 +647,7 @@ ULExport void ulViewResize(ULView view, unsigned int width,
 
 ///
 /// Acquire the page's JSContext for use with JavaScriptCore API.
-/// 
+///
 /// @note  This call locks the context for the current thread. You should
 ///        call ulViewUnlockJSContext() after using the context so other
 ///        worker threads can modify JavaScript state.
@@ -1014,7 +1027,7 @@ ULExport ULBitmap ulCreateBitmap(unsigned int width, unsigned int height,
 ///
 ULExport ULBitmap ulCreateBitmapFromPixels(unsigned int width,
                                            unsigned int height,
-                                           ULBitmapFormat format, 
+                                           ULBitmapFormat format,
                                            unsigned int row_bytes,
                                            const void* pixels, size_t size,
                                            bool should_copy);
@@ -1235,7 +1248,7 @@ ULExport void ulSurfaceUnlockPixels(ULSurface surface);
 ///
 /// Resize the pixel buffer to a certain width and height (both in pixels).
 ///
-/// This should never be called while pixels are locked. 
+/// This should never be called while pixels are locked.
 ///
 ULExport void ulSurfaceResize(ULSurface surface, unsigned int width, unsigned int height);
 
@@ -1872,9 +1885,9 @@ ULExport void ulPlatformSetLogger(ULLogger logger);
 
 ///
 /// Set a custom FileSystem implementation.
-///          
+///
 /// This is used for loading File URLs (eg, <file:///page.html>). If you don't
-/// call this, and are not using ulCreateApp() or ulEnablePlatformFileSystem(), 
+/// call this, and are not using ulCreateApp() or ulEnablePlatformFileSystem(),
 /// you will not be able to load any File URLs.
 ///
 /// You should call this before ulCreateRenderer() or ulCreateApp().

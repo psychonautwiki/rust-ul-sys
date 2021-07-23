@@ -1,5 +1,3 @@
-use bindgen::builder;
-
 use std::env;
 use std::path::PathBuf;
 
@@ -23,9 +21,9 @@ fn main() {
         .impl_partialeq(true)
         .generate_comments(true)
         .generate_inline_functions(true)
-        .whitelist_var("^UL.*|JS.*|ul.*|WK.*")
-        .whitelist_type("^UL.*|JS.*|ul.*|WK.*")
-        .whitelist_function("^UL.*|JS.*|ul.*|WK.*")
+        .allowlist_var("^UL.*|JS.*|ul.*|WK.*")
+        .allowlist_type("^UL.*|JS.*|ul.*|WK.*")
+        .allowlist_function("^UL.*|JS.*|ul.*|WK.*")
         .generate()
         .expect("Unable to generate bindings");
 

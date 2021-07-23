@@ -79,7 +79,7 @@ JS_EXPORT void JSContextGroupRelease(JSContextGroupRef group) JSC_API_AVAILABLE(
  In WebKit version 4.0 and later, the context is created in a unique context group.
  Therefore, scripts may execute in it concurrently with scripts executing in other contexts.
  However, you may not use values created in the context in other contexts.
-@param globalObjectClass The class to use when creating the global object. Pass 
+@param globalObjectClass The class to use when creating the global object. Pass
  NULL to use the default object class.
 @result A JSGlobalContext with a global object of class globalObjectClass.
 */
